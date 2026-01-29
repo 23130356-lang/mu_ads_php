@@ -1,17 +1,18 @@
 <?php
-session_start();
+// 1. Logic xử lý Session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Kiểm tra nếu đã login thì đá về trang chủ
+// Nếu đã login thì đá về trang chủ
 if (isset($_SESSION['user'])) {
     header("Location: index.php");
     exit();
 }
 
-// Lấy thông báo từ URL (ví dụ: index.php?url=auth&error=Sai mật khẩu)
-$error = isset($_GET['error']) ? $_GET['error'] : '';
-$success = isset($_GET['success']) ? $_GET['success'] : '';
-// Mặc định hiển thị tab nào? (login hoặc register)
-$activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 'login';
+$error = $_GET['error'] ?? '';
+$success = $_GET['success'] ?? '';
+$activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' : 'login';
 ?>
 
 <!DOCTYPE html>
@@ -23,7 +24,6 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -41,15 +41,26 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
             background-color: var(--mu-bg);
             color: #ccc;
             font-family: 'Rajdhani', sans-serif;
-            /* Background tối huyền bí + Ảnh nền mờ */
             background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.95)), url('https://toquoc.mediacdn.vn/280518851207290880/2022/6/7/-1654571912757628297204.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             min-height: 100vh;
+            
+            /* Flexbox căn giữa nội dung chính (Form) */
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative; /* Để hỗ trợ absolute con nếu cần */
+        }
+
+        /* [MỚI] Class để ghim Header lên trên cùng */
+        .header-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000; /* Đảm bảo nằm trên các phần tử khác */
         }
 
         /* === 2. AUTH CARD STYLE === */
@@ -59,14 +70,16 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
             border-top: 3px solid var(--mu-gold);
             width: 100%;
             max-width: 500px;
-            padding: 0; /* Padding xử lý bên trong để Tab đẹp hơn */
+            padding: 0;
             box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(207, 170, 86, 0.15);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+            /* Thêm margin top để tránh bị header che nếu màn hình quá bé */
+            margin-top: 60px; 
+            margin-bottom: 30px;
         }
 
-        /* Trang trí 4 góc (Góc vuông vàng) */
         .auth-card::before, .auth-card::after {
             content: ''; position: absolute; width: 15px; height: 15px;
             border: 2px solid var(--mu-gold); pointer-events: none; z-index: 10;
@@ -94,10 +107,7 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
             border-bottom: 3px solid transparent;
         }
 
-        .auth-tab-btn:hover {
-            color: #aaa;
-            background: rgba(255,255,255,0.02);
-        }
+        .auth-tab-btn:hover { color: #aaa; background: rgba(255,255,255,0.02); }
 
         .auth-tab-btn.active {
             color: var(--mu-gold);
@@ -107,26 +117,9 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
         }
 
         /* === 4. FORM CONTENT === */
-        .auth-body {
-            padding: 30px;
-        }
-
-        .form-title {
-            text-align: center;
-            font-family: 'Cinzel', serif;
-            color: #fff;
-            margin-bottom: 5px;
-            font-size: 1.5rem;
-        }
-        
-        .form-subtitle {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #777;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .auth-body { padding: 30px; }
+        .form-title { text-align: center; font-family: 'Cinzel', serif; color: #fff; margin-bottom: 5px; font-size: 1.5rem; }
+        .form-subtitle { text-align: center; font-size: 0.85rem; color: #777; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Input Styles */
         .mu-form-group { margin-bottom: 18px; position: relative; }
@@ -135,7 +128,7 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
             width: 100%;
             background: rgba(255,255,255,0.04);
             border: 1px solid #333;
-            padding: 12px 15px 12px 45px; /* Chừa chỗ cho Icon */
+            padding: 12px 15px 12px 45px;
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             font-size: 1.05rem;
@@ -150,16 +143,9 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
             box-shadow: 0 0 10px rgba(207, 170, 86, 0.2);
         }
 
-        .mu-input::placeholder { color: #555; font-size: 0.95rem; }
-
         .mu-input-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #555;
-            font-size: 1rem;
-            transition: 0.3s;
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            color: #555; font-size: 1rem; transition: 0.3s;
         }
         .mu-input:focus ~ .mu-input-icon { color: var(--mu-gold); }
 
@@ -167,54 +153,38 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
         .btn-mu-submit {
             width: 100%;
             background: linear-gradient(180deg, var(--mu-red-hover) 0%, var(--mu-red) 100%);
-            border: 1px solid #ff4444;
-            color: white;
-            padding: 12px;
-            font-family: 'Cinzel', serif;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            margin-top: 10px;
+            border: 1px solid #ff4444; color: white; padding: 12px;
+            font-family: 'Cinzel', serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s; margin-top: 10px;
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
-
         .btn-mu-submit:hover {
             background: linear-gradient(180deg, #ff4d4d 0%, #a00000 100%);
-            box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
-            transform: translateY(-2px);
-            border-color: #fff;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.5); transform: translateY(-2px); border-color: #fff;
         }
 
         /* Alerts */
         .alert-mu {
-            background: rgba(139, 0, 0, 0.15);
-            border: 1px solid var(--mu-red);
-            color: #ff8888;
-            font-size: 0.9rem;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
+            background: rgba(139, 0, 0, 0.15); border: 1px solid var(--mu-red);
+            color: #ff8888; font-size: 0.9rem; padding: 10px; margin-bottom: 20px;
+            display: flex; align-items: center; border-radius: 0;
         }
         .alert-mu.success {
-            background: rgba(25, 135, 84, 0.15);
-            border-color: #198754;
-            color: #75b798;
+            background: rgba(25, 135, 84, 0.15); border-color: #198754; color: #75b798;
         }
 
-        /* Utilities */
         .mu-link { color: #888; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
         .mu-link:hover { color: var(--mu-gold); }
         .divider { border-top: 1px solid #333; margin: 25px 0 15px; }
-        
-        /* Hiệu ứng ẩn hiện */
         .auth-mode { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
         .auth-mode.active { display: block; opacity: 1; }
     </style>
 </head>
 <body>
+
+<div class="header-wrapper">
+    <?php include 'includes/header.php'; ?>
+</div>
 
 <div class="container d-flex justify-content-center">
     
@@ -265,9 +235,7 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
                         <a href="#" class="mu-link small">Quên mật khẩu?</a>
                     </div>
 
-                    <button type="submit" class="btn btn-mu-submit">
-                        VÀO HỆ THỐNG
-                    </button>
+                    <button type="submit" class="btn btn-mu-submit">VÀO HỆ THỐNG</button>
                 </form>
             </div>
 
@@ -311,18 +279,14 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-mu-submit">
-                        KHỞI TẠO TÀI KHOẢN
-                    </button>
+                    <button type="submit" class="btn btn-mu-submit">KHỞI TẠO TÀI KHOẢN</button>
                 </form>
             </div>
 
             <div class="divider"></div>
 
             <div class="text-center">
-                <a href="index.php" class="mu-link">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại trang chủ
-                </a>
+                <a href="index.php" class="mu-link"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại trang chủ</a>
             </div>
 
         </div>
@@ -331,41 +295,25 @@ $activeTab = isset($_GET['mode']) && $_GET['mode'] == 'register' ? 'register' : 
 
 <script>
     function switchMode(mode) {
-        // Cập nhật giao diện Tabs
         document.querySelectorAll('.auth-tab-btn').forEach(btn => btn.classList.remove('active'));
-        // Tìm tab hiện tại dựa vào onclick text hoặc index, ở đây dùng logic đơn giản:
         const tabs = document.querySelectorAll('.auth-tab-btn');
-        if(mode === 'login') tabs[0].classList.add('active');
-        else tabs[1].classList.add('active');
+        if(mode === 'login') tabs[0].classList.add('active'); else tabs[1].classList.add('active');
 
-        // Ẩn tất cả các form
         document.querySelectorAll('.auth-mode').forEach(el => {
             el.classList.remove('active');
             el.style.opacity = '0';
-            setTimeout(() => {
-                if(!el.classList.contains('active')) el.style.display = 'none';
-            }, 300);
+            setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 300);
         });
 
-        // Hiện form được chọn
         const target = document.getElementById('mode-' + mode);
         target.style.display = 'block';
+        setTimeout(() => { target.classList.add('active'); target.style.opacity = '1'; }, 50);
         
-        // Timeout nhỏ để hiệu ứng opacity hoạt động sau khi display block
-        setTimeout(() => {
-            target.classList.add('active');
-            target.style.opacity = '1';
-        }, 50);
-
-        // Xóa thông báo lỗi cũ nếu có khi chuyển tab (tùy chọn)
         const alerts = document.querySelectorAll('.alert-mu');
         alerts.forEach(alert => alert.style.display = 'none');
     }
 
-    // Đảm bảo hiển thị đúng tab khi load trang (dựa vào biến PHP)
     document.addEventListener("DOMContentLoaded", function() {
-        // Mặc định PHP đã render đúng class 'active' cho div, 
-        // nhưng ta cần set display cho đúng style
         const activeMode = '<?= $activeTab ?>';
         document.getElementById('mode-' + (activeMode === 'login' ? 'register' : 'login')).style.display = 'none';
         

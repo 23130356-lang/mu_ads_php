@@ -1,56 +1,71 @@
 <?php
 class User {
     private $conn;
-    private $table_name = "users";
+    private $table = 'users';
 
-    public $user_id;
-    public $username;
-    public $email;
-    public $password;
-    public $coin;
-    public $role;
-
-    public function __construct($db) { $this->conn = $db; }
-
-    public function readAll() {
-        $query = "SELECT user_id, username, email, coin, role FROM " . $this->table_name;
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt;
+    public function __construct($db) {
+        $this->conn = $db;
     }
 
-    public function updateCoin($id, $amount) {
-        $query = "UPDATE " . $this->table_name . " SET coin = coin + ? WHERE user_id = ?";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$amount, $id]);
-    }
-    // Kiểm tra xem username, email hoặc phone đã tồn tại chưa
+    // 1. Kiểm tra xem tài khoản, email hoặc sđt đã tồn tại chưa
     public function checkExists($username, $email, $phone) {
-        $query = "SELECT user_id FROM " . $this->table_name . " 
-                  WHERE username = ? OR email = ? OR phone = ? LIMIT 1";
+        $query = "SELECT user_id FROM " . $this->table . " 
+                  WHERE username = :username 
+                  OR email = :email 
+                  OR phone = :phone 
+                  LIMIT 1";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$username, $email, $phone]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Làm sạch dữ liệu đầu vào
+        $username = htmlspecialchars(strip_tags($username));
+        $email = htmlspecialchars(strip_tags($email));
+        $phone = htmlspecialchars(strip_tags($phone));
+
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':phone', $phone);
+
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
     }
 
-    // Tạo user mới
+    // 2. Tạo tài khoản mới
     public function create($data) {
-        $query = "INSERT INTO " . $this->table_name . " 
-                  (username, email, password, phone, role, coin) 
-                  VALUES (:username, :email, :password, :phone, 'USER', 0)";
+        $query = "INSERT INTO " . $this->table . " 
+                  (username, password, email, phone, role, created_at) 
+                  VALUES 
+                  (:username, :password, :email, :phone, 'member', NOW())";
+
         $stmt = $this->conn->prepare($query);
-        
-        // Mã hóa mật khẩu trước khi lưu
-        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        
-        return $stmt->execute($data);
+
+        // Làm sạch dữ liệu
+        $username = htmlspecialchars(strip_tags($data['username']));
+        $email    = htmlspecialchars(strip_tags($data['email']));
+        $phone    = htmlspecialchars(strip_tags($data['phone']));
+        // Password đã được mã hóa ở Controller nên không cần strip_tags
+
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':password', $data['password']); // Đã Hash
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':phone', $phone);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
 
-    // Tìm user phục vụ đăng nhập
+    // 3. Tìm thông tin user để đăng nhập
     public function findByUsername($username) {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE username = ? LIMIT 1";
+        $query = "SELECT * FROM " . $this->table . " WHERE username = :username LIMIT 1";
+        
         $stmt = $this->conn->prepare($query);
-        $stmt->execute([$username]);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+?>

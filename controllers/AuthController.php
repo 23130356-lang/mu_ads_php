@@ -1,6 +1,6 @@
 <?php
-// File: controllers/AuthController.php
-require_once '../models/User.php';
+// Nhúng Model User
+require_once __DIR__ . '/../models/User.php';
 
 class AuthController {
     private $userModel;
@@ -9,73 +9,116 @@ class AuthController {
         $this->userModel = new User($db);
     }
 
+    // --- XỬ LÝ ĐĂNG KÝ ---
     public function register() {
-        $data = json_decode(file_get_contents("php://input"), true);
-        
-        if (empty($data['username']) || empty($data['password']) || empty($data['email'])) {
-            echo json_encode(["status" => "error", "message" => "Thiếu thông tin bắt buộc"]);
+        // 1. Nhận dữ liệu từ $_POST (Form HTML)
+        $username = $_POST['username'] ?? '';
+        $email    = $_POST['email'] ?? '';
+        $phone    = $_POST['phone'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $confirm  = $_POST['confirmPassword'] ?? '';
+
+        // 2. Validate cơ bản
+        if (empty($username) || empty($password) || empty($email) || empty($phone)) {
+            $this->redirect('register', 'Vui lòng điền đầy đủ thông tin!');
             return;
         }
 
-        if ($this->userModel->checkExists($data['username'], $data['email'], $data['phone'])) {
-            echo json_encode(["status" => "error", "message" => "Tài khoản, Email hoặc Số điện thoại đã tồn tại"]);
+        if ($password !== $confirm) {
+            $this->redirect('register', 'Mật khẩu nhập lại không khớp!');
             return;
         }
+
+        // 3. Kiểm tra trùng lặp trong DB
+        if ($this->userModel->checkExists($username, $email, $phone)) {
+            $this->redirect('register', 'Tài khoản, Email hoặc SĐT đã tồn tại!');
+            return;
+        }
+
+        // 4. Mã hóa mật khẩu & Tạo User
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        $data = [
+            'username' => $username,
+            'password' => $hashedPassword,
+            'email'    => $email,
+            'phone'    => $phone
+        ];
 
         if ($this->userModel->create($data)) {
-            echo json_encode(["status" => "success", "message" => "Đăng ký thành công!"]);
+            // Đăng ký thành công -> Chuyển sang Tab Login
+            // url=login & mode=login & success=...
+            header("Location: index.php?url=login&mode=login&success=" . urlencode("Đăng ký thành công! Hãy đăng nhập."));
+            exit;
         } else {
-            echo json_encode(["status" => "error", "message" => "Lỗi hệ thống, vui lòng thử lại"]);
+            $this->redirect('register', 'Lỗi hệ thống, vui lòng thử lại sau.');
         }
     }
 
+    // --- XỬ LÝ ĐĂNG NHẬP ---
     public function login() {
-        $data = json_decode(file_get_contents("php://input"), true);
-        
-        // Kiểm tra dữ liệu đầu vào
-        if (empty($data['username']) || empty($data['password'])) {
-            echo json_encode(["status" => "error", "message" => "Vui lòng nhập tài khoản và mật khẩu"]);
+        $username = $_POST['username'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        // 1. Kiểm tra rỗng
+        if (empty($username) || empty($password)) {
+            $this->redirect('login', 'Vui lòng nhập tài khoản và mật khẩu!');
             return;
         }
 
-        $user = $this->userModel->findByUsername($data['username']);
+        // 2. Tìm User trong DB
+        $user = $this->userModel->findByUsername($username);
 
-        if ($user && password_verify($data['password'], $user['password'])) {
-            // 1. Khởi tạo Session an toàn (chỉ start nếu chưa có)
+        // 3. Kiểm tra Password
+        if ($user && password_verify($password, $user['password'])) {
+            // --- ĐĂNG NHẬP THÀNH CÔNG ---
+            
+            // Khởi tạo Session nếu chưa có
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
-            // 2. Bảo mật: Xóa mật khẩu đã mã hóa trước khi lưu vào session hoặc trả về client
+            // Xóa mật khẩu trước khi lưu vào session (Bảo mật)
             unset($user['password']);
 
-            // 3. --- QUAN TRỌNG: SỬA LỖI TẠI ĐÂY ---
-            // Lưu riêng user_id ra ngoài để ServerController dễ dàng truy cập
-            // Dòng này kiểm tra: nếu DB trả về cột 'user_id' thì lấy, nếu không thì lấy 'id'
-            $_SESSION['user_id'] = $user['user_id'] ?? $user['id']; 
-            
-            // Lưu thêm các thông tin cần thiết khác
+            // Lưu các biến Session quan trọng
+            $_SESSION['user'] = $user;             // Dùng để hiển thị Header
             $_SESSION['username'] = $user['username'];
-            $_SESSION['user'] = $user; // Lưu mảng user (đã xóa password) để dùng cho việc khác nếu cần
+            
+            // QUAN TRỌNG: Kiểm tra tên cột ID trong DB của bạn là 'user_id' hay 'id'
+            // Code này tự động lấy cái nào tồn tại để tránh lỗi
+            $_SESSION['user_id'] = $user['user_id'] ?? $user['id']; 
 
-            // 4. Trả về kết quả
-            echo json_encode([
-                "status" => "success", 
-                "message" => "Đăng nhập thành công", 
-                "user" => $user
-            ]);
+            // Chuyển hướng về Trang Chủ
+            header("Location: index.php");
+            exit;
+
         } else {
-            echo json_encode(["status" => "error", "message" => "Sai tài khoản hoặc mật khẩu"]);
+            // Sai mật khẩu hoặc tài khoản
+            $this->redirect('login', 'Sai tài khoản hoặc mật khẩu!');
         }
     }
-    
-    // Hàm đăng xuất (Bổ sung thêm nếu bạn cần)
+
+    // --- XỬ LÝ ĐĂNG XUẤT ---
     public function logout() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        
+        // Hủy toàn bộ session
+        session_unset();
         session_destroy();
-        echo json_encode(["status" => "success", "message" => "Đã đăng xuất"]);
+
+        // Quay về trang chủ
+        header("Location: index.php");
+        exit;
+    }
+
+    // Hàm phụ trợ để redirect kèm thông báo lỗi cho gọn code
+    private function redirect($mode, $errorMsg) {
+        // mode = login hoặc register
+        header("Location: index.php?url=$mode&mode=$mode&error=" . urlencode($errorMsg));
+        exit;
     }
 }
 ?>

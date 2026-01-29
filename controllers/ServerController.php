@@ -91,6 +91,12 @@ class ServerController {
 
 
     public function store() {
+        if (!isset($_SESSION['user_id'])) {
+        die("Bạn phải đăng nhập mới được đăng bài!");
+    }
+
+    // 2. Lấy ID từ Session đã lưu ở AuthController
+    $userId = $_SESSION['user_id'];
 
         if (session_status() === PHP_SESSION_NONE) session_start();
 

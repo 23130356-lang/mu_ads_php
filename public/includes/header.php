@@ -3,33 +3,34 @@
 // PHẦN XỬ LÝ DATA (LOGIC)
 // =========================================================================
 
+// [MỚI] Tự động xác định đường dẫn gốc để tránh lỗi XAMPP Dashboard
+// Ví dụ: http://localhost/ten-du-an/
+$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$baseUrl = $protocol . $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
+
 // 1. Kiểm tra và kết nối Database nếu chưa có biến $db
 if (!isset($db)) {
-    // Đường dẫn trỏ ngược ra thư mục config (tùy chỉnh theo cấu trúc thực tế)
     $dbPath = __DIR__ . '/../../config/Database.php';
-    
     if (file_exists($dbPath)) {
         require_once $dbPath;
         $database = new Database();
-        // Lưu ý: Kiểm tra file Database.php của bạn xem hàm tên là connect() hay getConnection()
-        // Dựa trên code cũ bạn gửi thì là connect()
         $db = $database->connect(); 
     } else {
         die("Lỗi: Không tìm thấy file cấu hình Database tại $dbPath");
     }
 }
 
-// 2. Nhúng Model MasterData để lấy dữ liệu menu
+// 2. Nhúng Model MasterData
 require_once __DIR__ . '/../../models/MasterData.php';
 
-// 3. Khởi tạo và lấy dữ liệu (Chỉ lấy nếu bên ngoài chưa truyền vào)
+// 3. Lấy dữ liệu Menu
 if (!isset($menuVersions) || !isset($menuTypes)) {
     $masterData = new MasterData($db);
-    $menuVersions = $masterData->getList('versions'); // Lấy danh sách phiên bản
-    $menuTypes    = $masterData->getList('resets');   // Lấy danh sách loại reset
+    $menuVersions = $masterData->getList('versions');
+    $menuTypes    = $masterData->getList('resets');
 }
 
-// 4. Hàm hỗ trợ tạo Slug URL (Nếu chưa có)
+// 4. Hàm Slug
 if (!function_exists('createSlug')) {
     function createSlug($str) {
         $str = trim(mb_strtolower($str));
@@ -52,6 +53,7 @@ if (!function_exists('createSlug')) {
 <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap" rel="stylesheet">
 
 <style>
+    /* ... Giữ nguyên CSS cũ của bạn ... */
     /* CSS ISOLATION: MUXUA HEADER */
     #muxua-unique-header {
         all: initial;
@@ -159,7 +161,7 @@ if (!function_exists('createSlug')) {
 
 <div id="muxua-unique-header">
     <div class="mh-container">
-        <a href="/" class="mh-logo-link">
+        <a href="<?php echo $baseUrl; ?>index.php" class="mh-logo-link">
             <div class="mh-brand-main">
                 <span class="mh-brand-gold metal-text">MUNORIA</span>
                 <span class="mh-brand-platinum metal-text">.MOBILE</span>
@@ -174,12 +176,12 @@ if (!function_exists('createSlug')) {
         <nav class="mh-nav">
             <ul class="mh-menu-list">
                 <li class="mh-menu-item">
-                    <a href="/" class="mh-menu-link">
+                    <a href="<?php echo $baseUrl; ?>index.php" class="mh-menu-link">
                         <i class="fa-solid fa-house-chimney"></i> Trang Chủ <i class="fa-solid fa-caret-down" style="margin-left: 5px; font-size: 10px;"></i>
                     </a>
                     <ul class="mh-dropdown">
-                        <li><a class="mh-dropdown-item" href="/?filterType=open&filterDay=today"><i class="fa-solid fa-fire me-2" style="color: #ff4444; width: 20px;"></i> Open Beta Hôm Nay</a></li>
-                        <li><a class="mh-dropdown-item" href="/?filterType=test&filterDay=today"><i class="fa-solid fa-flask me-2" style="color: #44ff44; width: 20px;"></i> Alpha Test Hôm Nay</a></li>
+                        <li><a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?filterType=open&filterDay=today"><i class="fa-solid fa-fire me-2" style="color: #ff4444; width: 20px;"></i> Open Beta Hôm Nay</a></li>
+                        <li><a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?filterType=test&filterDay=today"><i class="fa-solid fa-flask me-2" style="color: #44ff44; width: 20px;"></i> Alpha Test Hôm Nay</a></li>
                     </ul>
                 </li>
 
@@ -191,7 +193,7 @@ if (!function_exists('createSlug')) {
                         <?php if (!empty($menuVersions)): ?>
                             <?php foreach ($menuVersions as $ver): ?>
                                 <li>
-                                    <a class="mh-dropdown-item" href="/mu/<?php echo createSlug($ver['version_name']); ?>-v<?php echo $ver['version_id']; ?>">
+                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>mu/<?php echo createSlug($ver['version_name']); ?>-v<?php echo $ver['version_id']; ?>">
                                         <?php echo htmlspecialchars($ver['version_name']); ?>
                                     </a>
                                 </li>
@@ -210,7 +212,7 @@ if (!function_exists('createSlug')) {
                         <?php if (!empty($menuTypes)): ?>
                             <?php foreach ($menuTypes as $type): ?>
                                 <li>
-                                    <a class="mh-dropdown-item" href="/mu/<?php echo createSlug($type['reset_name']); ?>-r<?php echo $type['reset_id']; ?>">
+                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>mu/<?php echo createSlug($type['reset_name']); ?>-r<?php echo $type['reset_id']; ?>">
                                         <?php echo htmlspecialchars($type['reset_name']); ?>
                                     </a>
                                 </li>
@@ -222,35 +224,47 @@ if (!function_exists('createSlug')) {
                 </li>
 
                 <li class="mh-menu-item">
-                    <a href="/huong-dan" class="mh-menu-link"><i class="fa-solid fa-book-open"></i> Hướng Dẫn</a>
+                    <a href="<?php echo $baseUrl; ?>index.php?url=huong-dan" class="mh-menu-link"><i class="fa-solid fa-book-open"></i> Hướng Dẫn</a>
                 </li>
                 <li class="mh-menu-item">
-                    <a href="/banner-register" class="mh-menu-link mh-link-ads"><i class="fa-solid fa-crown" style="font-size: 16px !important;"></i> Quảng Cáo</a>
+                    <a href="<?php echo $baseUrl; ?>index.php?url=banner-register" class="mh-menu-link mh-link-ads"><i class="fa-solid fa-crown" style="font-size: 16px !important;"></i> Quảng Cáo</a>
                 </li>
             </ul>
         </nav>
 
         <div class="mh-actions">
-            <?php if (isset($_SESSION['user'])): ?>
-                <?php 
-                    $user = $_SESSION['user'];
-                    $avatar = !empty($user['avatar']) ? '/uploads/'.$user['avatar'] : 'https://i.imgur.com/6RLM83A.png';
-                ?>
-                <div class="mh-user-box">
-                    <div class="mh-user-display">
-                        <img src="<?php echo $avatar; ?>" class="mh-avatar" alt="Avt">
-                        <span class="mh-username"><?php echo htmlspecialchars($user['username']); ?></span>
-                    </div>
-                    </div>
-            <?php else: ?>
-                <a href="/auth.php" class="mh-login-link">
-                    <i class="fa-solid fa-right-to-bracket" style="margin-right:5px;"></i> Đăng nhập
-                </a>
-            <?php endif; ?>
+                    <?php if (isset($_SESSION['user'])): ?>
+                        <?php 
+                            $user = $_SESSION['user'];
+                        ?>
+                        <div class="mh-user-box">
+                            <div class="mh-user-display">
+                                <i class="fa-solid fa-circle-user" style="font-size: 32px; color: #cfaa56;"></i>
+                                <span class="mh-username"><?php echo htmlspecialchars($user['username']); ?></span>
+                                <i class="fa-solid fa-caret-down" style="color: #666; font-size: 12px; margin-left: 5px;"></i>
+                            </div>
+                            
+                            <ul class="mh-dropdown mh-user-dropdown">
+                                <li><a class="mh-dropdown-item" href="#">Quản lý tin đăng</a></li>
+                                <li><a class="mh-dropdown-item" href="#">Nạp Coins</a></li>
+                                <li style="border-top: 1px solid #333;">
+                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?url=logout" style="color: #ff5555;">
+                                        <i class="fa-solid fa-power-off"></i> Đăng Xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <a href="<?php echo $baseUrl; ?>index.php?url=login" class="mh-login-link">
+                            <i class="fa-solid fa-right-to-bracket" style="margin-right:5px;"></i> Đăng nhập
+                        </a>
+                    <?php endif; ?>
 
-            <a href="/index.php?url=create-server" class="mh-btn-post">
-                <i class="fa-solid fa-plus"></i> Đăng MU
-            </a>
+                    <a href="<?php echo $baseUrl; ?>index.php?url=create-server" class="mh-btn-post">
+                        <i class="fa-solid fa-plus"></i> Đăng MU
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

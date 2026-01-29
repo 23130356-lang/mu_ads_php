@@ -1,0 +1,256 @@
+<?php
+// =========================================================================
+// PHẦN XỬ LÝ DATA (LOGIC)
+// =========================================================================
+
+// 1. Kiểm tra và kết nối Database nếu chưa có biến $db
+if (!isset($db)) {
+    // Đường dẫn trỏ ngược ra thư mục config (tùy chỉnh theo cấu trúc thực tế)
+    $dbPath = __DIR__ . '/../../config/Database.php';
+    
+    if (file_exists($dbPath)) {
+        require_once $dbPath;
+        $database = new Database();
+        // Lưu ý: Kiểm tra file Database.php của bạn xem hàm tên là connect() hay getConnection()
+        // Dựa trên code cũ bạn gửi thì là connect()
+        $db = $database->connect(); 
+    } else {
+        die("Lỗi: Không tìm thấy file cấu hình Database tại $dbPath");
+    }
+}
+
+// 2. Nhúng Model MasterData để lấy dữ liệu menu
+require_once __DIR__ . '/../../models/MasterData.php';
+
+// 3. Khởi tạo và lấy dữ liệu (Chỉ lấy nếu bên ngoài chưa truyền vào)
+if (!isset($menuVersions) || !isset($menuTypes)) {
+    $masterData = new MasterData($db);
+    $menuVersions = $masterData->getList('versions'); // Lấy danh sách phiên bản
+    $menuTypes    = $masterData->getList('resets');   // Lấy danh sách loại reset
+}
+
+// 4. Hàm hỗ trợ tạo Slug URL (Nếu chưa có)
+if (!function_exists('createSlug')) {
+    function createSlug($str) {
+        $str = trim(mb_strtolower($str));
+        $str = preg_replace('/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/', 'a', $str);
+        $str = preg_replace('/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/', 'e', $str);
+        $str = preg_replace('/(ì|í|ị|ỉ|ĩ)/', 'i', $str);
+        $str = preg_replace('/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/', 'o', $str);
+        $str = preg_replace('/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/', 'u', $str);
+        $str = preg_replace('/(ỳ|ý|ỵ|ỷ|ỹ)/', 'y', $str);
+        $str = preg_replace('/(đ)/', 'd', $str);
+        $str = preg_replace('/[^a-z0-9-\s]/', '', $str);
+        $str = preg_replace('/([\s]+)/', '-', $str);
+        return $str;
+    }
+}
+?>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap" rel="stylesheet">
+
+<style>
+    /* CSS ISOLATION: MUXUA HEADER */
+    #muxua-unique-header {
+        all: initial;
+        font-family: 'Rajdhani', sans-serif;
+        display: block;
+        width: 100%;
+        background: #180303;
+        border-bottom: 1px solid #3d2b1f;
+        box-sizing: border-box;
+        position: sticky;
+        top: 0;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    }
+    #muxua-unique-header *, #muxua-unique-header *::before, #muxua-unique-header *::after {
+        box-sizing: border-box; margin: 0; padding: 0; outline: none;
+    }
+    #muxua-unique-header a { text-decoration: none; color: inherit; transition: 0.3s; cursor: pointer; }
+    #muxua-unique-header ul { list-style: none; }
+    #muxua-unique-header button { border: none; background: none; cursor: pointer; }
+
+    #muxua-unique-header .mh-container {
+        max-width: 1320px; margin: 0 auto; padding: 0 15px; height: 70px;
+        display: flex; align-items: center; justify-content: space-between; position: relative;
+    }
+
+    /* LOGO */
+    #muxua-unique-header .mh-logo-link { display: flex; flex-direction: column; justify-content: center; line-height: 1; margin-right: 40px; }
+    #muxua-unique-header .mh-brand-main {
+        font-family: 'Metal Mania', cursive; font-weight: 400; font-size: 36px; letter-spacing: 3px;
+        text-transform: uppercase; display: flex; align-items: center; transform: skewX(-10deg); filter: drop-shadow(2px 2px 0px #000);
+    }
+    .metal-text {
+        background-clip: text; -webkit-background-clip: text; color: transparent;
+        background-size: 200% auto; animation: shineMetal 3s infinite linear;
+        -webkit-text-stroke: 0.5px rgba(0,0,0,0.3);
+    }
+    #muxua-unique-header .mh-brand-gold { margin-right: 5px; background-image: linear-gradient(180deg, #ffeb3b 0%, #d4af37 40%, #ffffff 50%, #8a5d18 51%, #634211 100%); }
+    #muxua-unique-header .mh-brand-platinum { background-image: linear-gradient(180deg, #e6f0ff 0%, #aaccff 40%, #ffffff 50%, #7392ae 51%, #8db2d6 100%); }
+    #muxua-unique-header .mh-brand-desc { font-size: 10px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+    /* MENU */
+    #muxua-unique-header .mh-nav { flex-grow: 1; height: 100%; display: flex; align-items: center; }
+    #muxua-unique-header .mh-menu-list { display: flex; gap: 5px; height: 100%; }
+    #muxua-unique-header .mh-menu-item { position: relative; height: 100%; display: flex; align-items: center; }
+    #muxua-unique-header .mh-menu-link {
+        font-family: 'Cinzel', serif; font-weight: 700; font-size: 13px; padding: 0 15px;
+        text-transform: uppercase; color: #aaa; display: flex; align-items: center; height: 100%;
+        border-bottom: 2px solid transparent;
+    }
+    #muxua-unique-header .mh-menu-link i { margin-right: 6px; font-size: 12px; color: #555; transition: 0.3s; }
+    #muxua-unique-header .mh-menu-link:hover { color: #cfaa56; text-shadow: 0 0 8px rgba(207, 170, 86, 0.4); background: rgba(255,255,255,0.02); }
+    #muxua-unique-header .mh-menu-link:hover i { color: #8b0000; }
+    #muxua-unique-header .mh-link-ads { color: #ffd706 !important; }
+    #muxua-unique-header .mh-link-ads i { color: #ffd706 !important; }
+
+    /* DROPDOWN */
+    #muxua-unique-header .mh-dropdown {
+        display: none; position: absolute; top: 100%; left: 0; background: #0a0a0a;
+        border: 1px solid #3d2b1f; border-top: 2px solid #8b0000; min-width: 220px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.9); z-index: 10000; animation: mhFadeIn 0.2s ease-in-out;
+    }
+    #muxua-unique-header .mh-menu-item:hover .mh-dropdown { display: block; }
+    #muxua-unique-header .mh-dropdown-item {
+        display: block; padding: 12px 15px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-size: 13px; font-weight: 600; font-family: 'Rajdhani', sans-serif; text-transform: uppercase;
+    }
+    #muxua-unique-header .mh-dropdown-item:hover { background-color: rgba(139, 0, 0, 0.2); color: #fff; padding-left: 20px; }
+
+    /* ACTIONS */
+    #muxua-unique-header .mh-actions { display: flex; align-items: center; gap: 15px; }
+    #muxua-unique-header .mh-login-link { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; }
+    #muxua-unique-header .mh-login-link:hover { color: #cfaa56; }
+    #muxua-unique-header .mh-btn-post {
+        background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%); color: #fff; font-family: 'Cinzel', serif;
+        font-weight: 700; font-size: 12px; padding: 8px 18px; border: 1px solid #ff5555; text-transform: uppercase; white-space: nowrap;
+    }
+    #muxua-unique-header .mh-btn-post:hover { background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%); box-shadow: 0 0 10px rgba(220, 38, 38, 0.6); }
+
+    /* USER BOX */
+    #muxua-unique-header .mh-user-box { position: relative; cursor: pointer; }
+    #muxua-unique-header .mh-user-display { display: flex; align-items: center; gap: 8px; }
+    #muxua-unique-header .mh-avatar { width: 32px; height: 32px; border-radius: 4px; border: 1px solid #cfaa56; object-fit: cover; }
+    #muxua-unique-header .mh-username { font-weight: 700; color: #cfaa56; font-size: 13px; }
+    #muxua-unique-header .mh-user-dropdown { right: 0; left: auto; }
+    #muxua-unique-header .mh-user-box:hover .mh-user-dropdown { display: block; }
+
+    /* MOBILE */
+    #muxua-unique-header .mh-mobile-toggle { display: none; font-size: 24px; color: #cfaa56; padding: 10px; }
+
+    @media (max-width: 991px) {
+        #muxua-unique-header .mh-container { height: auto; flex-wrap: wrap; padding: 10px 15px; }
+        #muxua-unique-header .mh-mobile-toggle { display: block; margin-left: auto; }
+        #muxua-unique-header .mh-actions { display: none; }
+        #muxua-unique-header .mh-nav { display: none; width: 100%; border-top: 1px solid #333; margin-top: 10px; }
+        #muxua-unique-header .mh-nav.active { display: block; }
+        #muxua-unique-header .mh-menu-list { flex-direction: column; height: auto; gap: 0; }
+        #muxua-unique-header .mh-menu-item { width: 100%; display: block; height: auto; }
+        #muxua-unique-header .mh-menu-link { padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #muxua-unique-header .mh-dropdown { position: static; box-shadow: none; border: none; background: rgba(255,255,255,0.02); padding-left: 20px; }
+    }
+    @keyframes mhFadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shineMetal { 0% { background-position: -200% center; } 20% { background-position: 200% center; } 100% { background-position: 200% center; } }
+</style>
+
+<div id="muxua-unique-header">
+    <div class="mh-container">
+        <a href="/" class="mh-logo-link">
+            <div class="mh-brand-main">
+                <span class="mh-brand-gold metal-text">MUNORIA</span>
+                <span class="mh-brand-platinum metal-text">.MOBILE</span>
+            </div>
+            <div class="mh-brand-desc">Huyền Thoại Trở Lại</div>
+        </a>
+
+        <button class="mh-mobile-toggle" onclick="document.querySelector('#muxua-unique-header .mh-nav').classList.toggle('active')">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <nav class="mh-nav">
+            <ul class="mh-menu-list">
+                <li class="mh-menu-item">
+                    <a href="/" class="mh-menu-link">
+                        <i class="fa-solid fa-house-chimney"></i> Trang Chủ <i class="fa-solid fa-caret-down" style="margin-left: 5px; font-size: 10px;"></i>
+                    </a>
+                    <ul class="mh-dropdown">
+                        <li><a class="mh-dropdown-item" href="/?filterType=open&filterDay=today"><i class="fa-solid fa-fire me-2" style="color: #ff4444; width: 20px;"></i> Open Beta Hôm Nay</a></li>
+                        <li><a class="mh-dropdown-item" href="/?filterType=test&filterDay=today"><i class="fa-solid fa-flask me-2" style="color: #44ff44; width: 20px;"></i> Alpha Test Hôm Nay</a></li>
+                    </ul>
+                </li>
+
+                <li class="mh-menu-item">
+                    <a href="#" class="mh-menu-link">
+                        <i class="fa-solid fa-scroll"></i> Phiên Bản <i class="fa-solid fa-caret-down" style="margin-left: 5px; font-size: 10px;"></i>
+                    </a>
+                    <ul class="mh-dropdown">
+                        <?php if (!empty($menuVersions)): ?>
+                            <?php foreach ($menuVersions as $ver): ?>
+                                <li>
+                                    <a class="mh-dropdown-item" href="/mu/<?php echo createSlug($ver['version_name']); ?>-v<?php echo $ver['version_id']; ?>">
+                                        <?php echo htmlspecialchars($ver['version_name']); ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li><a class="mh-dropdown-item" href="#">Đang cập nhật...</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </li>
+
+                <li class="mh-menu-item">
+                    <a href="#" class="mh-menu-link">
+                        <i class="fa-solid fa-shield-halved"></i> Loại Reset <i class="fa-solid fa-caret-down" style="margin-left: 5px; font-size: 10px;"></i>
+                    </a>
+                    <ul class="mh-dropdown">
+                        <?php if (!empty($menuTypes)): ?>
+                            <?php foreach ($menuTypes as $type): ?>
+                                <li>
+                                    <a class="mh-dropdown-item" href="/mu/<?php echo createSlug($type['reset_name']); ?>-r<?php echo $type['reset_id']; ?>">
+                                        <?php echo htmlspecialchars($type['reset_name']); ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                         <?php else: ?>
+                            <li><a class="mh-dropdown-item" href="#">Đang cập nhật...</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </li>
+
+                <li class="mh-menu-item">
+                    <a href="/huong-dan" class="mh-menu-link"><i class="fa-solid fa-book-open"></i> Hướng Dẫn</a>
+                </li>
+                <li class="mh-menu-item">
+                    <a href="/banner-register" class="mh-menu-link mh-link-ads"><i class="fa-solid fa-crown" style="font-size: 16px !important;"></i> Quảng Cáo</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mh-actions">
+            <?php if (isset($_SESSION['user'])): ?>
+                <?php 
+                    $user = $_SESSION['user'];
+                    $avatar = !empty($user['avatar']) ? '/uploads/'.$user['avatar'] : 'https://i.imgur.com/6RLM83A.png';
+                ?>
+                <div class="mh-user-box">
+                    <div class="mh-user-display">
+                        <img src="<?php echo $avatar; ?>" class="mh-avatar" alt="Avt">
+                        <span class="mh-username"><?php echo htmlspecialchars($user['username']); ?></span>
+                    </div>
+                    </div>
+            <?php else: ?>
+                <a href="/auth.php" class="mh-login-link">
+                    <i class="fa-solid fa-right-to-bracket" style="margin-right:5px;"></i> Đăng nhập
+                </a>
+            <?php endif; ?>
+
+            <a href="/index.php?url=create-server" class="mh-btn-post">
+                <i class="fa-solid fa-plus"></i> Đăng MU
+            </a>
+        </div>
+    </div>
+</div>

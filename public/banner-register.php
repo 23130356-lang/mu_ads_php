@@ -11,6 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        .pb-5 {
+    padding-bottom: 0.5rem !important;
+}
+        .mu-info-container {
+    max-width: 1300px;   /* Giới hạn chiều ngang */
+    width: 100%;
+    margin: 0 auto;     /* Căn giữa */
+}
+
         /* === GIỮ NGUYÊN 100% CSS CỦA BẠN === */
         .mu-info-container { background: rgba(10, 5, 5, 0.8); border: 1px solid #3d2b1f; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         .mu-tabs { border-bottom: 1px solid #3d2b1f; padding: 0 1rem; }
@@ -395,9 +404,194 @@
                 </form>
             </div>
         </div>
+        
     </div>
+    
 </div>
+ <div class="row mt-5">
+            <div class="col-12">
+                <div class="mu-info-container rounded">
+                    <ul class="nav nav-tabs mu-tabs" id="infoTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                <i class="fa-solid fa-chart-line me-2"></i>Tổng Quan
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="banner-tab" data-bs-toggle="tab" data-bs-target="#banner" type="button" role="tab">
+                                <i class="fa-regular fa-image me-2"></i>Thông Số Banner
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vip-tab" data-bs-toggle="tab" data-bs-target="#vip" type="button" role="tab">
+                                <i class="fa-solid fa-crown me-2"></i>Cơ Chế VIP
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ads-tab" data-bs-toggle="tab" data-bs-target="#ads" type="button" role="tab">
+                                <i class="fa-brands fa-facebook me-2"></i>Facebook Ads
+                            </button>
+                        </li>
+                    </ul>
 
+                    <div class="tab-content">
+
+                        <div class="tab-pane fade show active tab-pane-content" id="overview" role="tabpanel">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="stat-card">
+                                        <i class="fa-solid fa-users-gear text-secondary fa-2x mb-3"></i>
+                                        <span class="stat-num">6.000+</span>
+                                        <div class="text-uppercase text-secondary small fw-bold">Admin Tin Tưởng</div>
+                                        <div class="text-white mt-2 small">Đã sử dụng dịch vụ quảng cáo</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="stat-card">
+                                        <i class="fa-solid fa-gamepad text-secondary fa-2x mb-3"></i>
+                                        <span class="stat-num">16.800+</span>
+                                        <div class="text-uppercase text-secondary small fw-bold">Game Mu Online</div>
+                                        <div class="text-white mt-2 small">Đã đăng bài giới thiệu chi tiết</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center my-5">
+                                <h4 class="marketing-title" style="font-size: 1.5rem; margin-bottom: 1rem;">HIỆU QUẢ QUẢNG CÁO TỐI ĐA</h4>
+                                <div class="p-4 fst-italic position-relative" style="background: rgba(255,0,0,0.05); border: 1px dashed var(--mu-red-dark); display: inline-block;">
+                                    <i class="fa-solid fa-quote-left text-danger position-absolute top-0 start-0 m-2"></i>
+                                    <div class="px-4">
+                                        <p class="mb-1 text-light">"Ngay cả khi... Mu bạn mới không ai tới?"</p>
+                                        <p class="mb-1 text-light">"Ngay cả khi... Mu bạn cũ bị gamer phũ?"</p>
+                                        <p class="mb-0 fw-bold text-warning">"Ngay cả khi... Mu chà bá, cần bứt phá?"</p>
+                                    </div>
+                                    <i class="fa-solid fa-quote-right text-danger position-absolute bottom-0 end-0 m-2"></i>
+                                </div>
+                                <p class="mt-4 text-secondary">
+                                    Chúng tôi là nơi tập hợp cộng đồng đam mê MU Online lớn nhất. Game thủ truy cập hàng ngày để tìm kiếm Server mới ra.<br>
+                                    Mọi quảng cáo đều được đo lường tự động bằng <strong>bitly.com</strong> để đảm bảo minh bạch.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade tab-pane-content" id="banner" role="tabpanel">
+                            <h5 class="text-warning font-cinzel mb-3"><i class="fa-solid fa-tag me-2"></i>DỊCH VỤ TREO BANNER</h5>
+                            <p>Hiển thị ở tất cả các trang và mục hướng dẫn chơi game. Hỗ trợ ảnh động, trailer Youtube, Canvas 3D HTML5.</p>
+
+                            <div class="table-responsive">
+                                <table class="mu-spec-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Loại Banner</th>
+                                        <th>Kích thước (px)</th>
+                                        <th>Số lượng Slot</th>
+                                        <th>Định dạng hỗ trợ</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td class="fw-bold text-white">Banner Giữa To (VIP)</td>
+                                        <td><span class="badge bg-danger">780 x 280</span></td>
+                                        <td>01 (Độc quyền)</td>
+                                        <td>Ảnh động, Youtube, HTML5</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-light">Banner Giữa (Nhỏ)</td>
+                                        <td>1200 x 120 <small class="text-secondary">(hoặc 780x110)</small></td>
+                                        <td>08</td>
+                                        <td>Ảnh động, HTML5</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-light">Banner Trái</td>
+                                        <td>280 x 500 <small class="text-secondary">(hoặc 210x400)</small></td>
+                                        <td>06</td>
+                                        <td>Ảnh động, HTML5</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-light">Banner Phải</td>
+                                        <td>280 x 500 <small class="text-secondary">(hoặc 210x400)</small></td>
+                                        <td>06</td>
+                                        <td>Ảnh động, HTML5</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3 text-secondary small">
+                                <i class="fa-solid fa-circle-info me-1 text-warning"></i>
+                                Lưu ý: Dung lượng banner không quá 2MB. Hệ thống tự động hiển thị sau 30 phút đăng ký.
+                                (nếu banner không đúng kích thước, hệ thống sẽ tự điều chỉnh để khớp với kích thước mẫu)
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade tab-pane-content" id="vip" role="tabpanel">
+                            <h5 class="text-danger font-cinzel mb-3"><i class="fa-solid fa-crown me-2"></i>DỊCH VỤ GHIM BÀI VIP</h5>
+                            <p>Bài viết của bạn được <strong>PIN (Ghim)</strong> lên trang đầu tiên tại:</p>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <ul class="marketing-list fa-ul text-secondary">
+                                        <li><span class="fa-li"><i class="fa-solid fa-check text-success"></i></span>Trang chủ Mu mới ra</li>
+                                        <li><span class="fa-li"><i class="fa-solid fa-check text-success"></i></span>Trang tìm kiếm Alpha Test / Open Beta hôm nay</li>
+                                        <li><span class="fa-li"><i class="fa-solid fa-check text-success"></i></span>Trang lọc Season (SS2, SS6, SS16, Non-Reset...)</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border border-secondary rounded bg-dark">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Kích thước ảnh VIP:</span>
+                                            <span class="text-warning fw-bold">780 x 110 px</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Giới hạn slot:</span>
+                                            <span class="text-white fw-bold">20 vị trí</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Dung lượng tối đa:</span>
+                                            <span class="text-white fw-bold">200 Kb</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="algo-box">
+                                <span class="algo-title"><i class="fa-solid fa-calculator me-2"></i>Cơ Chế Chia Sẻ Hiển Thị (Smart Rotation)</span>
+                                <p class="mb-2">Khi người dùng xem chi tiết một MU khác, hệ thống sẽ đề xuất 2 vị trí VIP liên quan. Tỷ lệ hiển thị của bạn phụ thuộc vào độ cạnh tranh của phiên bản đó:</p>
+
+                                <div class="ps-3 border-start border-success my-3">
+                                    <p class="mb-1 text-light"><small>VÍ DỤ 1 (Cạnh tranh cao):</small></p>
+                                    <p class="mb-0 text-secondary fst-italic">Bạn chạy SS6.3, có 10 Admin khác cũng chạy VIP SS6.<br>
+                                        ➜ Tỷ lệ hiển thị = 2 vị trí / 10 Server = <strong>20%</strong>.</p>
+                                </div>
+
+                                <div class="ps-3 border-start border-success">
+                                    <p class="mb-1 text-light"><small>VÍ DỤ 2 (Độc quyền):</small></p>
+                                    <p class="mb-0 text-secondary fst-italic">Bạn chạy SS2, chỉ có 1 Admin khác chạy VIP SS2.<br>
+                                        ➜ Tỷ lệ hiển thị = 2 vị trí / 2 Server = <strong>100% (Luôn hiển thị)</strong>.</p>
+                                </div>
+
+                                <div class="mt-3 small text-secondary">
+                                    * Hệ thống tự động nhóm các phiên bản liên quan (Ví dụ: SS1, SS2, SS3, SS4... được tính chung là nhóm SS thấp).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade tab-pane-content" id="ads" role="tabpanel">
+                            <div class="text-center py-5">
+                                <i class="fa-brands fa-facebook fa-4x text-primary mb-3"></i>
+                                <h4 class="text-white font-cinzel">CHẠY QUẢNG CÁO FACEBOOK ADS</h4>
+                                <p class="text-secondary mx-auto" style="max-width: 600px;">
+                                    Sử dụng tệp khách hàng <strong>Re-marketing</strong> chất lượng cao từ những game thủ đã truy cập website.
+                                    Giúp quảng cáo của bạn tiếp cận đúng đối tượng đam mê Mu Online, tối ưu chi phí chuyển đổi.
+                                </p>
+                                <span class="badge bg-secondary border border-secondary mt-3 p-2 px-3">
+                            <i class="fa-solid fa-flask me-1"></i> TÍNH NĂNG ĐANG THỬ NGHIỆM
+                        </span>
+                                <p class="mt-2 text-muted small">Chúng tôi sẽ sớm cập nhật thông tin chi tiết.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 <?php 
 // include 'footer.php'; 
 ?>

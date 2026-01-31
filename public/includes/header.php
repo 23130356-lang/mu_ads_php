@@ -100,7 +100,7 @@ if (!function_exists('createSlug')) {
     #muxua-unique-header .mh-menu-list { display: flex; gap: 5px; height: 100%; }
     #muxua-unique-header .mh-menu-item { position: relative; height: 100%; display: flex; align-items: center; }
     #muxua-unique-header .mh-menu-link {
-        font-family: 'Cinzel', serif; font-weight: 700; font-size: 13px; padding: 0 15px;
+        font-family: 'Cinzel', serif; font-weight: 700; font-size: 12px; padding: 0 15px;
         text-transform: uppercase; color: #aaa; display: flex; align-items: center; height: 100%;
         border-bottom: 2px solid transparent;
     }

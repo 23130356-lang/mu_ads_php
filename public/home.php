@@ -1,4 +1,15 @@
 <?php
+// File này chỉ chứa View, dữ liệu đã được HomeController chuẩn bị sẵn.
+// Các biến có sẵn: $superVips, $vips, $normals, $bannersHero, $bannersLeft, v.v.
+
+// Hàm hỗ trợ lấy banner an toàn (chỉ cho View)
+if (!function_exists('getBanner')) {
+    function getBanner($list, $index) {
+        return isset($list[$index]) ? $list[$index] : null;
+    }
+}
+?>
+<?php
 // --- Xử lý Logic Ngày Tháng (Tương đương đoạn đầu của JSP) ---
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $todayStr     = date('d/m/Y');
@@ -127,9 +138,9 @@ function getBanner($list, $index) {
         .stat-box { flex: 1; font-size: 0.9rem; }
         .banner-line { width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 5px; }
 .inner-banner-img {
-    width: 100%;
-    height: 42px; /* thấp hơn cho gọn */
-    object-fit: cover;
+    width: 95%;
+    height: 50px; /* thấp hơn cho gọn */
+    object-fit: fill;
 }
 
 
@@ -192,6 +203,7 @@ function getBanner($list, $index) {
     </style>
 </head>
 <body>
+  <?php include 'includes/header.php'; ?>
 
 <?php if(file_exists('header.php')) include 'header.php'; ?>
 

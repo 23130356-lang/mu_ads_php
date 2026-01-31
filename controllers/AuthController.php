@@ -38,16 +38,16 @@ class AuthController {
         // 4. Mã hóa mật khẩu & Tạo User
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+        // Mặc định đăng ký mới là role USER (tránh ai đó hack form gửi role ADMIN lên)
         $data = [
             'username' => $username,
             'password' => $hashedPassword,
             'email'    => $email,
-            'phone'    => $phone
+            'phone'    => $phone,
+            'role'     => 'USER' // Gán cứng role USER
         ];
 
         if ($this->userModel->create($data)) {
-            // Đăng ký thành công -> Chuyển sang Tab Login
-            // url=login & mode=login & success=...
             header("Location: index.php?url=login&mode=login&success=" . urlencode("Đăng ký thành công! Hãy đăng nhập."));
             exit;
         } else {
@@ -81,18 +81,18 @@ class AuthController {
             // Xóa mật khẩu trước khi lưu vào session (Bảo mật)
             unset($user['password']);
 
-            // Lưu các biến Session quan trọng
-            $_SESSION['user'] = $user;             // Dùng để hiển thị Header
-            $_SESSION['username'] = $user['username'];
-            
-            // QUAN TRỌNG: Kiểm tra tên cột ID trong DB của bạn là 'user_id' hay 'id'
-            // Code này tự động lấy cái nào tồn tại để tránh lỗi
+            // [QUAN TRỌNG] Lưu toàn bộ thông tin user (bao gồm role) vào session
+            $_SESSION['user'] = $user;
             $_SESSION['user_id'] = $user['user_id'] ?? $user['id']; 
-            if ($user['role'] === 'ADMIN') {
-                header("Location: ../admin/index.php"); 
-                exit; // Quan trọng: Phải có exit để dừng code tại đây
+
+            // 4. ĐIỀU HƯỚNG DỰA TRÊN QUYỀN (ROLE)
+            if (isset($user['role']) && $user['role'] === 'ADMIN') {
+                
+                header("Location: ../admin/views/home_banners/index.php"); 
+                exit; 
             }
-            // Chuyển hướng về Trang Chủ
+
+            // Nếu là User thường -> Về trang chủ
             header("Location: index.php");
             exit;
 
@@ -117,9 +117,8 @@ class AuthController {
         exit;
     }
 
-    // Hàm phụ trợ để redirect kèm thông báo lỗi cho gọn code
+    // Hàm phụ trợ
     private function redirect($mode, $errorMsg) {
-        // mode = login hoặc register
         header("Location: index.php?url=$mode&mode=$mode&error=" . urlencode($errorMsg));
         exit;
     }

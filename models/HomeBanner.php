@@ -105,8 +105,8 @@ class HomeBanner {
         $stmt->bindParam(':start_date', $data['start_date']);
         $stmt->bindParam(':end_date', $data['end_date']);
         $stmt->bindParam(':display_order', $data['display_order']);
-        $stmt->bindParam(':is_active', $data['is_active']);
-        $stmt->bindParam(':id', $data['id']);
+// Thêm tham số thứ 3 là PDO::PARAM_INT để báo cho MySQL biết đây là số, không phải chuỗi
+$stmt->bindParam(':is_active', $data['is_active'], PDO::PARAM_INT);        $stmt->bindParam(':id', $data['id']);
 
         if (!empty($data['image_url'])) {
             $stmt->bindParam(':image_url', $data['image_url']);

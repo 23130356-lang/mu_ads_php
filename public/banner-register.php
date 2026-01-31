@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+<head>git
     <meta charset="UTF-8">
     <title>Thuê Quảng Cáo | MuNoria.mobile Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,12 +15,10 @@
     padding-bottom: 0.5rem !important;
 }
         .mu-info-container {
-    max-width: 1300px;   /* Giới hạn chiều ngang */
+    max-width: 1300px; 
     width: 100%;
-    margin: 0 auto;     /* Căn giữa */
+    margin: 0 auto;    
 }
-
-        /* === GIỮ NGUYÊN 100% CSS CỦA BẠN === */
         .mu-info-container { background: rgba(10, 5, 5, 0.8); border: 1px solid #3d2b1f; box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         .mu-tabs { border-bottom: 1px solid #3d2b1f; padding: 0 1rem; }
         .mu-tabs .nav-link { background: transparent; color: #888; font-family: 'Cinzel', serif; font-weight: 700; border: none; border-bottom: 3px solid transparent; padding: 1rem 1.5rem; transition: all 0.3s; text-transform: uppercase; }

@@ -88,7 +88,10 @@ class AuthController {
             // QUAN TRỌNG: Kiểm tra tên cột ID trong DB của bạn là 'user_id' hay 'id'
             // Code này tự động lấy cái nào tồn tại để tránh lỗi
             $_SESSION['user_id'] = $user['user_id'] ?? $user['id']; 
-
+            if ($user['role'] === 'ADMIN') {
+                header("Location: ../admin/index.php"); 
+                exit; // Quan trọng: Phải có exit để dừng code tại đây
+            }
             // Chuyển hướng về Trang Chủ
             header("Location: index.php");
             exit;
@@ -120,5 +123,5 @@ class AuthController {
         header("Location: index.php?url=$mode&mode=$mode&error=" . urlencode($errorMsg));
         exit;
     }
-}
+}   
 ?>

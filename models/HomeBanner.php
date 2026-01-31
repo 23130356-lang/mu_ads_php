@@ -59,5 +59,84 @@ class HomeBanner {
         $stmt->execute();
         return $stmt;
     }
+// --- PHẦN BỔ SUNG CHO ADMIN ---
+
+    // 5. Admin: Lấy tất cả banner (kể cả ẩn/hiện/hết hạn)
+    public function getAllForAdmin() {
+        $query = "SELECT h.*, u.username 
+                  FROM " . $this->table . " h
+                  LEFT JOIN users u ON h.user_id = u.user_id
+                  ORDER BY h.id DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // 6. Admin: Lấy 1 banner theo ID để sửa
+    public function getById($id) {
+        $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // 7. Admin: Cập nhật Banner
+    public function update($data) {
+        // Cập nhật linh hoạt: nếu image_url rỗng (không up ảnh mới) thì giữ nguyên ảnh cũ
+        $query = "UPDATE " . $this->table . " 
+                  SET position_code = :position_code,
+                      target_url = :target_url,
+                      start_date = :start_date,
+                      end_date = :end_date,
+                      display_order = :display_order,
+                      is_active = :is_active";
+
+        if (!empty($data['image_url'])) {
+            $query .= ", image_url = :image_url";
+        }
+
+        $query .= " WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':position_code', $data['position_code']);
+        $stmt->bindParam(':target_url', $data['target_url']);
+        $stmt->bindParam(':start_date', $data['start_date']);
+        $stmt->bindParam(':end_date', $data['end_date']);
+        $stmt->bindParam(':display_order', $data['display_order']);
+        $stmt->bindParam(':is_active', $data['is_active']);
+        $stmt->bindParam(':id', $data['id']);
+
+        if (!empty($data['image_url'])) {
+            $stmt->bindParam(':image_url', $data['image_url']);
+        }
+
+        return $stmt->execute();
+    }
+
+    // 8. Admin: Xóa Banner
+    public function delete($id) {
+        // Lấy ảnh để xóa file vật lý nếu cần
+        $banner = $this->getById($id);
+        
+        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return $banner['image_url']; // Trả về đường dẫn ảnh để Controller xóa file
+        }
+        return false;
+    }
+
+    // 9. Admin: Toggle trạng thái (Nhanh)
+    public function toggleStatus($id, $status) {
+        $query = "UPDATE " . $this->table . " SET is_active = :status WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
 }
 ?>

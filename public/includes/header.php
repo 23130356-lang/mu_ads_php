@@ -53,8 +53,7 @@ if (!function_exists('createSlug')) {
 <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap" rel="stylesheet">
 
 <style>
-    /* ... Giữ nguyên CSS cũ của bạn ... */
-    /* CSS ISOLATION: MUXUA HEADER */
+
     #muxua-unique-header {
         all: initial;
         font-family: 'Rajdhani', sans-serif;

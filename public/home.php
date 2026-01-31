@@ -52,7 +52,6 @@ function getBanner($list, $index) {
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === GIỮ NGUYÊN 100% CSS CŨ CỦA BẠN === */
         :root {
             --mu-bg: #050505;
             --mu-panel-bg: rgba(12, 12, 12, 0.95);

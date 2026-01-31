@@ -27,6 +27,7 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        
         /* === 1. GLOBAL VARIABLES & BACKGROUND === */
         :root {
             --mu-bg: #050505;
@@ -47,11 +48,12 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
             background-attachment: fixed;
             min-height: 100vh;
             
-            /* Flexbox căn giữa nội dung chính (Form) */
+            /* [QUAN TRỌNG] Thay đổi Flexbox để hỗ trợ Footer nằm đáy */
             display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative; /* Để hỗ trợ absolute con nếu cần */
+            flex-direction: column; /* Xếp dọc: Header -> Content -> Footer */
+            /* align-items: center;  <-- Bỏ dòng này (để footer full width) */
+            /* justify-content: center; <-- Bỏ dòng này (để dùng flex-grow) */
+            position: relative;
         }
 
         /* [MỚI] Class để ghim Header lên trên cùng */
@@ -60,7 +62,7 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 1000; /* Đảm bảo nằm trên các phần tử khác */
+            z-index: 1000;
         }
 
         /* === 2. AUTH CARD STYLE === */
@@ -75,9 +77,9 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
-            /* Thêm margin top để tránh bị header che nếu màn hình quá bé */
-            margin-top: 60px; 
-            margin-bottom: 30px;
+            /* Margin để tránh header và tạo khoảng cách */
+            margin-top: 180px; 
+            margin-bottom: 120px;
         }
 
         .auth-card::before, .auth-card::after {
@@ -186,7 +188,7 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
   <?php include 'includes/header.php'; ?>
 </div>
 
-<div class="container d-flex justify-content-center">
+<div class="container d-flex justify-content-center align-items-center flex-grow-1">
     
     <div class="auth-card">
         <div class="auth-tabs">
@@ -292,6 +294,8 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
         </div>
     </div>
 </div>
+
+<?php include 'includes/footer.php'; ?>
 
 <script>
     function switchMode(mode) {

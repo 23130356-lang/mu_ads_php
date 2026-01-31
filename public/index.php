@@ -30,14 +30,20 @@ switch ($url) {
     // --- TRANG CHỦ (GỌI CONTROLLER) ---
     case 'home':
         require_once '../controllers/HomeController.php';
-        // Truyền $db vào constructor để controller dùng
         $homeCtrl = new HomeController($db); 
         $homeCtrl->index();
         break;
 
+    // --- TRANG HƯỚNG DẪN (MỚI THÊM) ---
+    case 'huong-dan':
+        // File guide.php đã tự include header/footer bên trong nó
+        // nên ở đây chỉ cần require file view là đủ.
+        require_once 'guide.php'; 
+        break;
+
     // --- AUTH ---
     case 'login':
-        require_once 'auth.php'; // Giả sử view login tên là auth.php
+        require_once 'auth.php'; 
         break;
 
     case 'register':
@@ -67,7 +73,6 @@ switch ($url) {
     case 'create-server':
         require_once 'includes/header.php';
         if (!isset($_SESSION['user_id'])) {
-            // Redirect thông minh
             header("Location: index.php?url=login&error=" . urlencode("Bạn cần đăng nhập để đăng bài"));
             exit;
         }
@@ -95,7 +100,6 @@ switch ($url) {
 
     // --- 404 ---
     default:
-        // Đảm bảo header được load nếu có file
         if(file_exists('includes/header.php')) include 'includes/header.php';
         echo "<div class='container text-center text-white mt-5'>
                 <h1 class='text-danger'>404</h1>

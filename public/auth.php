@@ -183,7 +183,7 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
 <body>
 
 <div class="header-wrapper">
-    <?php include 'includes/header.php'; ?>
+  <?php include 'includes/header.php'; ?>
 </div>
 
 <div class="container d-flex justify-content-center">

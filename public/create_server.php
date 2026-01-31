@@ -227,9 +227,7 @@ $remSvip = $maxSuperVip - $usedSuperVip;
 
 <body class="d-flex flex-column min-vh-100">
 
-<?php
-include 'includes/header.php';
- ?>
+
 
 <div class="flex-grow-1 d-flex flex-column py-5">
     <div class="container">

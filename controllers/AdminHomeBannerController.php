@@ -8,16 +8,11 @@ class AdminHomeBannerController {
     private $db;
 
     public function __construct() {
-        // 1. Khởi động Session nếu chưa có
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // 2. Kiểm tra đã đăng nhập chưa? (Dựa vào cấu trúc session của bạn)
-        // Giả sử khi login bạn lưu $_SESSION['user'] hoặc $_SESSION['user_id']
         if (!isset($_SESSION['user']) && !isset($_SESSION['user_id'])) {
-            // Chưa đăng nhập -> Đá về trang login
-            // Đường dẫn này tính từ file View đang chạy (admin/views/home_banners/...)
             header("Location: ../../../public/index.php?url=login&error=" . urlencode("Vui lòng đăng nhập quản trị"));
             exit;
         }
@@ -78,7 +73,6 @@ class AdminHomeBannerController {
         }
     }
 
-    // Xử lý Cập nhật
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id = $_POST['id'];
@@ -126,7 +120,6 @@ class AdminHomeBannerController {
         }
     }
 
-    // Hàm Upload ảnh
     private function handleUpload() {
         if (isset($_FILES['imageFile']) && $_FILES['imageFile']['error'] === 0) {
             $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -135,9 +128,7 @@ class AdminHomeBannerController {
 
             if (in_array($ext, $allowed)) {
                 $newName = "banner_" . time() . "_" . uniqid() . "." . $ext;
-                
-                // Dùng __DIR__ để định vị chính xác thư mục public/uploads/banners/
-                $targetDir = __DIR__ . "/../public/uploads/banners/";
+                                $targetDir = __DIR__ . "/../public/uploads/banners/";
                 
                 if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                 

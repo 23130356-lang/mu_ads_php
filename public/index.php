@@ -69,17 +69,30 @@ switch ($url) {
         (new AuthController($db))->logout();
         break;
 
-    // ================= [MỚI] PROFILE (HỒ SƠ CÁ NHÂN) =================
+    // ================= PROFILE (HỒ SƠ CÁ NHÂN) =================
     case 'profile':
-        // File profile.php đã chứa logic lấy dữ liệu và include header/footer
-        // Nên ta chỉ cần require file đó vào là được
         require_once 'profile.php';
         break;
 
     case 'update_profile':
-        // Case này xử lý khi form trong profile.php được submit
         require_once '../controllers/AuthController.php';
         (new AuthController($db))->updateProfile();
+        break;
+    // ================= QUẢN LÝ SERVER (MỚI BỔ SUNG) =================
+    
+    // 1. Xem danh sách server của tôi
+    case 'manage-server':
+        require_once '../controllers/ServerController.php';
+        $serverCtrl = new ServerController($db);
+        $serverCtrl->manage(); // Hàm này sẽ include file view manage_servers.php
+        require_once 'includes/footer.php';
+        break;
+
+    // 2. Xử lý gia hạn server
+        case 'renew': 
+        require_once '../controllers/ServerController.php';
+        $serverCtrl = new ServerController($db);
+        $serverCtrl->renew(); // Xử lý logic và redirect
         break;
 
     // ================= TẠO SERVER (ĐĂNG BÀI) =================

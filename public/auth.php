@@ -6,7 +6,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Nếu đã login thì đá về trang chủ
 if (isset($_SESSION['user'])) {
-    header("Location: index.php");
     exit();
 }
 

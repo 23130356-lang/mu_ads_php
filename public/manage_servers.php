@@ -1,31 +1,3 @@
-<?php
-// 1. Kiểm tra session (Bắt buộc đăng nhập)
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (!isset($_SESSION['user'])) {
-    header("Location: index.php?url=login&error=" . urlencode("Vui lòng đăng nhập!"));
-    exit;
-}
-
-// 2. Lấy danh sách server của user (Giả lập logic Controller gọi Model)
-// LƯU Ý: Phần này thường nằm ở Controller, nhưng tôi để tạm ở đây để file chạy được độc lập nếu cần.
-// Khi ghép vào MVC, bạn hãy comment đoạn này và truyền biến $servers từ Controller sang.
-require_once '../config/Database.php';
-require_once '../models/Server.php'; // Bạn cần file này
-
-// Kết nối DB
-$database = new Database();
-$db = $database->connect();
-
-// Gọi Model (Giả sử bạn đã có class Server và hàm getServerByUserId)
-// $serverModel = new Server($db);
-// $servers = $serverModel->getServersByUserId($_SESSION['user_id']); 
-
-// --- DỮ LIỆU GIẢ LẬP (XÓA KHI ĐÃ CÓ MODEL) ---
-// Nếu chưa có DB, code sẽ dùng mảng rỗng để không lỗi
-if (!isset($servers)) $servers = []; 
-// ---------------------------------------------
-?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -38,7 +10,7 @@ if (!isset($servers)) $servers = [];
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
-        /* === GIỮ NGUYÊN CSS TỪ FILE JSP CŨ === */
+        /* === CSS GIỮ NGUYÊN === */
         :root { --mu-bg: #050505; --mu-gold: #cfaa56; --mu-red: #8b0000; --mu-red-bright: #dc3545; --mu-glass: rgba(15, 15, 15, 0.95); --mu-border: #3d2b1f; }
         body { background-color: var(--mu-bg); color: #d1d1d1; font-family: 'Rajdhani', sans-serif; background-image: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.95)), url('https://wallpaperaccess.com/full/1524368.jpg'); background-size: cover; background-attachment: fixed; background-position: center; }
         h1, h2, h3, h4, h5 { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 1px; }
@@ -79,7 +51,7 @@ if (!isset($servers)) $servers = [];
                 </div>
                 <div class="list-group list-group-flush bg-transparent">
                     <a href="index.php?url=profile" class="list-group-item list-group-item-action bg-transparent text-light border-secondary"><i class="fa-solid fa-user me-2"></i> Hồ Sơ</a>
-                    <a href="index.php?url=manage_servers" class="list-group-item list-group-item-action bg-transparent text-gold border-secondary fw-bold" style="border-left: 3px solid var(--mu-gold);"><i class="fa-solid fa-server me-2"></i> Server Của Tôi</a>
+                    <a href="index.php?url=manage-server" class="list-group-item list-group-item-action bg-transparent text-gold border-secondary fw-bold" style="border-left: 3px solid var(--mu-gold);"><i class="fa-solid fa-server me-2"></i> Server Của Tôi</a>
                     <a href="#" class="list-group-item list-group-item-action bg-transparent text-light border-secondary"><i class="fa-solid fa-image me-2"></i> Banner Quảng Cáo</a>
                     <a href="index.php?url=logout" class="list-group-item list-group-item-action bg-transparent text-danger border-0"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng Xuất</a>
                 </div>
@@ -96,7 +68,7 @@ if (!isset($servers)) $servers = [];
                 <div class="row g-3">
                     <?php if (!empty($servers)): ?>
                         <?php foreach ($servers as $sv): 
-                            // Xử lý status
+                            // Xử lý status hiển thị
                             $statusClass = '';
                             $statusLabel = '';
                             switch ($sv['status']) {
@@ -122,7 +94,7 @@ if (!isset($servers)) $servers = [];
                                     <div class="meta-info mb-1">
                                         <i class="fa-solid fa-hourglass-end"></i> Hết hạn:
                                         <span class="text-light">
-                                            <?php echo date('d/m/Y', strtotime($sv['expired_at'])); ?>
+                                            <?php echo !empty($sv['expired_at']) ? date('d/m/Y', strtotime($sv['expired_at'])) : '---'; ?>
                                         </span>
                                     </div>
                                     <div class="meta-info mb-3">
@@ -130,15 +102,24 @@ if (!isset($servers)) $servers = [];
                                     </div>
 
                                     <div class="d-grid">
-                                        <button onclick="confirmRenew(
-                                            <?php echo $sv['server_id']; ?>, 
-                                            '<?php echo htmlspecialchars($sv['package_label'] ?? 'Gói Server'); ?>', 
-                                            <?php echo $sv['package_price'] ?? 0; ?>, 
-                                            <?php echo $sv['package_days'] ?? 30; ?>
-                                        )"
-                                        class="btn btn-outline-warning btn-sm text-gold border-warning">
-                                            <i class="fa-solid fa-cart-arrow-down"></i> GIA HẠN NGAY
-                                        </button>
+                                        <?php 
+                                        // KIỂM TRA: Chỉ hiện nút gia hạn nếu giá gói > 0
+                                        if ($sv['package_price'] > 0): 
+                                        ?>
+                                            <button onclick="confirmRenew(
+                                                <?php echo $sv['server_id']; ?>, 
+                                                '<?php echo htmlspecialchars($sv['package_label'] ?? 'Gói Server'); ?>', 
+                                                <?php echo $sv['package_price'] ?? 0; ?>, 
+                                                <?php echo $sv['package_days'] ?? 30; ?>
+                                            )"
+                                            class="btn btn-outline-warning btn-sm text-gold border-warning">
+                                                <i class="fa-solid fa-cart-arrow-down"></i> GIA HẠN NGAY
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                                <i class="fa-solid fa-ban"></i> KHÔNG THỂ GIA HẠN
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -167,15 +148,15 @@ if (!isset($servers)) $servers = [];
             title: '<span style="color: #cfaa56; font-family: Cinzel, serif; font-weight: 700;">XÁC NHẬN GIA HẠN</span>',
             html: `
                 <div style="color: #ccc; font-family: Rajdhani, sans-serif; font-size: 16px;">
-                    Bạn đang chọn gia hạn gói <b style="color: #fff; text-transform: uppercase;">` + packLabel + `</b><br>
+                    Bạn đang chọn gia hạn gói <b style="color: #fff; text-transform: uppercase;">${packLabel}</b><br>
                     <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.4); border: 1px dashed #555; border-radius: 6px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 8px;">
                             <span>Chi phí:</span>
-                            <span style="color: #cfaa56; font-size: 18px; font-weight: bold;">` + packPrice.toLocaleString() + ` Xu</span>
+                            <span style="color: #cfaa56; font-size: 18px; font-weight: bold;">${packPrice.toLocaleString()} Xu</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Thời gian cộng thêm:</span>
-                            <span style="color: #fff; font-weight: bold;">+` + packDays + ` Ngày</span>
+                            <span style="color: #fff; font-weight: bold;">+${packDays} Ngày</span>
                         </div>
                     </div>
                     <div style="margin-top: 10px; font-size: 14px; color: #888;">Hành động này sẽ trừ Xu trực tiếp vào tài khoản.</div>
@@ -189,24 +170,24 @@ if (!isset($servers)) $servers = [];
             cancelButtonText: '<i class="fa-solid fa-xmark"></i> HỦY BỎ',
             confirmButtonColor: '#8b0000',
             cancelButtonColor: '#333',
-            buttonsStyling: true,
             customClass: {
                 popup: 'mu-popup border border-warning'
-            },
-            focusConfirm: false
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                // [PHP] Cập nhật URL router cho phù hợp
-                window.location.href = "index.php?url=renew_server&id=" + serverId;
+                // [FIX QUAN TRỌNG] Đã sửa 'indow' thành 'window'
+                // [FIX QUAN TRỌNG] Đã đổi url thành 'renew' để gọi đúng vào Controller
+                window.location.href = 'index.php?url=renew&id=' + serverId;
             }
         });
     }
 
-    // 2. Kiểm tra URL để hiển thị thông báo kết quả
+    // 2. Kiểm tra URL để hiển thị thông báo kết quả từ Controller trả về
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get('status');
-        const message = urlParams.get('message');
+        // Decode message để hiển thị tiếng Việt không bị lỗi
+        const message = urlParams.get('message') ? decodeURIComponent(urlParams.get('message').replace(/\+/g, ' ')) : '';
 
         if (status === 'success') {
             Swal.fire({
@@ -219,7 +200,7 @@ if (!isset($servers)) $servers = [];
                 customClass: { popup: 'border border-warning' }
             }).then(() => {
                 // Xóa param trên url cho sạch
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?url=manage_servers";
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?url=manage-server";
                 window.history.pushState({path:newUrl},'',newUrl);
             });
         }
@@ -234,7 +215,7 @@ if (!isset($servers)) $servers = [];
                 confirmButtonColor: '#444',
                 customClass: { popup: 'border border-danger' }
             }).then(() => {
-                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?url=manage_servers";
+                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?url=manage-server";
                  window.history.pushState({path:newUrl},'',newUrl);
             });
         }

@@ -1,14 +1,8 @@
 <?php
-// =========================================================================
-// PHẦN XỬ LÝ DATA (LOGIC)
-// =========================================================================
 
-// [MỚI] Tự động xác định đường dẫn gốc để tránh lỗi XAMPP Dashboard
-// Ví dụ: http://localhost/ten-du-an/
 $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $baseUrl = $protocol . $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 
-// 1. Kiểm tra và kết nối Database nếu chưa có biến $db
 if (!isset($db)) {
     $dbPath = __DIR__ . '/../../config/Database.php';
     if (file_exists($dbPath)) {
@@ -245,7 +239,7 @@ if (!function_exists('createSlug')) {
                             
                             <ul class="mh-dropdown mh-user-dropdown">
                                  <li><a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?url=profile">Thông tin cá nhân</a></li>
-                                <li><a class="mh-dropdown-item" href="#">Quản lý tin đăng</a></li>
+                                <li><a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?url=manage-server">Quản lý tin đăng</a></li>
                                 <li><a class="mh-dropdown-item" href="index.php?url=huong-dan#section-payment">Nạp Coins</a></li>
                                
                                 <li style="border-top: 1px solid #333;">

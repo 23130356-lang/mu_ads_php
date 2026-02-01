@@ -9,7 +9,6 @@ class AdminServerController {
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         
-        // Check quyền Admin
         if (!isset($_SESSION['user']['role']) || $_SESSION['user']['role'] !== 'ADMIN') {
             header("Location: ../../../public/index.php"); 
             exit;
@@ -28,26 +27,20 @@ class AdminServerController {
         ];
     }
 
-    // File: controllers/AdminServerController.php
 
 public function index() {
-    // 1. Cấu hình phân trang
-    $limit = 10; // Số server hiển thị trên 1 trang
+    $limit = 10; 
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     if ($page < 1) $page = 1;
     
-    // 2. Tính Offset (Vị trí bắt đầu lấy dữ liệu)
     $offset = ($page - 1) * $limit;
 
-    // 3. Lấy tổng số dòng dữ liệu để tính tổng số trang
     $total_records = $this->model->countAllForAdmin();
     $total_pages = ceil($total_records / $limit);
 
-    // 4. Lấy danh sách server theo limit và offset
     $servers = $this->model->getAllForAdmin($limit, $offset);
     $prices = $this->getPackagePrices();
     
-    // 5. Trả về mảng dữ liệu bao gồm cả thông tin phân trang
     return [
         'servers' => $servers,
         'prices'  => $prices,
@@ -72,28 +65,23 @@ public function index() {
 
             $data = [
                 'server_id'     => $_POST['server_id'],
-                // Thông tin chung
                 'server_name'   => $_POST['server_name'],
                 'mu_name'       => $_POST['mu_name'],
                 'slogan'        => $_POST['slogan'],
                 'banner_package'=> $_POST['banner_package'],
                 'status'        => $_POST['status'],
-// Trong Controller, đoạn này ĐÚNG:
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'banner_image'  => $imageUrl,
-                // Config
                 'version_id'    => $_POST['version_id'],
                 'type_id'       => $_POST['type_id'],
                 'reset_id'      => $_POST['reset_id'],
                 'website_url'   => $_POST['website_url'],
                 'fanpage_url'   => $_POST['fanpage_url'],
                 'description'   => $_POST['description'],
-                // Stats
                 'exp_rate'      => $_POST['exp_rate'],
                 'drop_rate'     => $_POST['drop_rate'],
                 'anti_hack'     => $_POST['anti_hack'],
                 'point_id'      => $_POST['point_id'],
-                // Schedule
                 'alpha_date'    => $_POST['alpha_date'],
                 'alpha_time'    => $_POST['alpha_time'],
                 'open_date'     => $_POST['open_date'],

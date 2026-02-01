@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 // 1. Kiểm tra đăng nhập
 if (!isset($_SESSION['user'])) {
     header("Location: index.php?url=login&error=" . urlencode("Vui lòng đăng nhập để xem hồ sơ!"));

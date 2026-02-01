@@ -7,7 +7,6 @@ class HomeBannerController {
     private $userModel;
     private $db;
 
-    // CẤU HÌNH (Khớp với View)
     private $configs = [
         'HERO'          => ['price' => 500000, 'limit' => 1, 'days' => 30],
         'LEFT_SIDEBAR'  => ['price' => 200000, 'limit' => 5, 'days' => 30],
@@ -21,22 +20,17 @@ class HomeBannerController {
         $this->userModel = new User($db);
     }
 
-    // --- [QUAN TRỌNG] HÀM CHUẨN BỊ DỮ LIỆU ĐỂ HIỂN THỊ GIAO DIỆN ---
     public function index() {
-        // 1. Kiểm tra session và cập nhật lại Coin mới nhất từ DB
         if (session_status() === PHP_SESSION_NONE) session_start();
         
         $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
         
         if ($currentUser && isset($currentUser['user_id'])) {
-            // Lấy coin thực tế từ DB để tránh sai lệch session cũ
             $realCoin = $this->userModel->getCoin($currentUser['user_id']);
             $currentUser['coin'] = $realCoin;
-            // Cập nhật ngược lại session
             $_SESSION['user']['coin'] = $realCoin;
         }
 
-        // 2. Chuẩn bị mảng dữ liệu mặc định để tránh lỗi Undefined variable
         $viewData = [
             'currentUser' => $currentUser,
             'qtyInfo' => [],
@@ -49,26 +43,19 @@ class HomeBannerController {
             'isFullStd' => false
         ];
 
-        // 3. Loop qua config để lấy số liệu thực tế từ DB
         foreach ($this->configs as $code => $cfg) {
-            // Giá tiền
             $viewData['prices'][$code] = $cfg['price'];
 
-            // Đếm số lượng đang chạy
             $count = $this->bannerModel->countByPosition($code);
-            // Format hiển thị: "2 / 5"
             $viewData['qtyInfo'][$code] = $count . ' / ' . $cfg['limit'];
 
-            // Kiểm tra xem đã đầy chưa
             $isFull = ($count >= $cfg['limit']);
 
-            // Gán cờ boolean (để view dùng if/else)
             if ($code == 'LEFT_SIDEBAR') $viewData['isFullLeft'] = $isFull;
             if ($code == 'RIGHT_SIDEBAR') $viewData['isFullRight'] = $isFull;
             if ($code == 'HERO') $viewData['isFullHero'] = $isFull;
             if ($code == 'STD') $viewData['isFullStd'] = $isFull;
 
-            // Gán text trạng thái và ngày mở lại
             if ($isFull) {
                 $viewData['availability'][$code] = "<span style='color:red; font-weight:bold;'>ĐÃ FULL</span>";
                 $nextOpen = $this->bannerModel->getNextAvailableTime($code);
@@ -79,16 +66,13 @@ class HomeBannerController {
             }
         }
 
-        // 4. Bung mảng $viewData thành các biến lẻ ($qtyInfo, $prices...)
         extract($viewData);
 
-        // 5. Gọi View hiển thị (Include Header tại đây để Header cũng nhận được biến $currentUser)
-        // Lưu ý: Đường dẫn tính từ file index.php ở thư mục public
+       
         require_once 'includes/header.php'; 
         require_once 'banner-register.php'; 
     }
 
-    // --- XỬ LÝ MUA BANNER (POST) ---
     public function register() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         
@@ -100,7 +84,6 @@ class HomeBannerController {
         $userId = $_SESSION['user_id'];
         $posCode = $_POST['positionCode'] ?? '';
         
-        // 1. Validate Config
         if (!array_key_exists($posCode, $this->configs)) {
             $this->redirectBack("Vị trí không hợp lệ");
         }
@@ -109,19 +92,16 @@ class HomeBannerController {
         $price = $config['price'];
         $days = $config['days'];
 
-        // 2. Validate Slot
         $currentCount = $this->bannerModel->countByPosition($posCode);
         if ($currentCount >= $config['limit']) {
             $this->redirectBack("Vị trí này vừa hết slot!");
         }
 
-        // 3. Xử lý Ảnh
         $finalImage = $this->handleImageUpload();
         if (!$finalImage) {
             $this->redirectBack("Lỗi ảnh: Vui lòng upload file ảnh hợp lệ hoặc nhập URL đúng.");
         }
 
-        // 4. Transaction (Trừ tiền + Tạo Banner)
         try {
             $this->db->beginTransaction();
 
@@ -145,7 +125,6 @@ class HomeBannerController {
 
             $this->db->commit();
             
-            // Cập nhật lại session coin
             $_SESSION['user']['coin'] = $this->userModel->getCoin($userId);
 
             header("Location: index.php?url=banner-register&success=" . urlencode("Đăng ký thành công!"));
@@ -153,7 +132,6 @@ class HomeBannerController {
 
         } catch (Exception $e) {
             $this->db->rollBack();
-            // Xóa ảnh rác nếu có
             if (strpos($finalImage, 'uploads/') !== false && file_exists("../public/" . $finalImage)) {
                 @unlink("../public/" . $finalImage);
             }
@@ -172,7 +150,6 @@ class HomeBannerController {
 
                 if (in_array($ext, $allowed)) {
                     $newName = "banner_" . time() . "_" . uniqid() . "." . $ext;
-                    // Chú ý đường dẫn lưu file
                     $targetDir = "../public/uploads/banners/";
                     if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                     

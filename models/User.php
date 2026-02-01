@@ -7,7 +7,6 @@ class User {
         $this->conn = $db;
     }
 
-    // 1. Kiểm tra tồn tại (Dùng cho Register)
     public function checkExists($username, $email, $phone) {
         $query = "SELECT user_id FROM " . $this->table . " 
                   WHERE username = :username OR email = :email OR phone = :phone LIMIT 1";
@@ -35,7 +34,7 @@ class User {
         $fullName = htmlspecialchars(strip_tags($data['full_name']));
 
         $stmt->bindParam(':username', $username);
-        $stmt->bindParam(':password', $data['password']); // Đã Hash ở Controller
+        $stmt->bindParam(':password', $data['password']);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':phone', $phone);
         $stmt->bindParam(':full_name', $fullName);

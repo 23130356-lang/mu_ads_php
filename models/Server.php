@@ -3,24 +3,131 @@ class Server {
     private $conn;
     private $table_name = "servers";
 
-    private $prices = [
-        'BASIC'     => 0,
-        'VIP'       => 100,
-        'SUPER_VIP' => 200
+ 
+    public $packages = [
+        'BASIC'     => ['price' => 0,   'days' => 7,  'label' => 'BASIC'],
+        'VIP'       => ['price' => 100, 'days' => 10, 'label' => 'VIP'],
+        'SUPER_VIP' => ['price' => 200, 'days' => 14, 'label' => 'Super VIP']
     ];
 
     public function __construct($db) { 
         $this->conn = $db; 
     }
 
-    // --- PHẦN 1: CLIENT SIDE (GIỮ NGUYÊN) ---
+    // =================================================================
+    // PHẦN 1: QUẢN LÝ SERVER CÁ NHÂN (MỚI BỔ SUNG)
+    // =================================================================
+
+    /**
+     * Lấy danh sách server của User đang đăng nhập
+     */
+    public function getServersByUserId($userId) {
+        $sql = "SELECT s.*, 
+                       v.version_name 
+                FROM " . $this->table_name . " s
+                LEFT JOIN mu_versions v ON s.version_id = v.version_id
+                WHERE s.user_id = :uid 
+                ORDER BY s.created_at DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':uid' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Xử lý gia hạn Server (Trừ tiền + Cộng ngày)
+     */
+    public function renew($serverId, $userId) {
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Lấy thông tin Server hiện tại (để biết gói cước và ngày hết hạn cũ)
+            $stmt = $this->conn->prepare("SELECT server_name, banner_package, expired_at, status FROM " . $this->table_name . " WHERE server_id = :sid AND user_id = :uid");
+            $stmt->execute([':sid' => $serverId, ':uid' => $userId]);
+            $server = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$server) {
+                throw new Exception("Server không tồn tại hoặc bạn không có quyền sở hữu.");
+            }
+
+            // 2. Lấy thông tin giá và ngày từ cấu hình $packages
+            $packKey = $server['banner_package'];
+            if (!isset($this->packages[$packKey])) {
+                throw new Exception("Gói cước hiện tại của server không hợp lệ để gia hạn.");
+            }
+            
+            $packInfo = $this->packages[$packKey];
+            $cost = $packInfo['price'];
+            $daysToAdd = $packInfo['days'];
+
+            // Nếu là gói miễn phí (BASIC) có thể chặn gia hạn hoặc cho phép tùy chính sách
+            if ($cost <= 0) {
+                 // Ví dụ: Không cho gia hạn gói miễn phí, bắt phải đăng ký lại hoặc nâng cấp (tùy bạn)
+                 // Ở đây tôi cho phép gia hạn miễn phí để test
+            }
+
+            // 3. Kiểm tra và Trừ tiền User
+            // Sử dụng FOR UPDATE để khóa row tránh race condition
+            $userStmt = $this->conn->prepare("SELECT coin FROM users WHERE user_id = :uid FOR UPDATE");
+            $userStmt->execute([':uid' => $userId]);
+            $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user || $user['coin'] < $cost) {
+                throw new Exception("Số dư không đủ để gia hạn (Cần: " . number_format($cost) . " Xu).");
+            }
+
+            // Trừ tiền
+            $this->conn->prepare("UPDATE users SET coin = coin - :cost WHERE user_id = :uid")
+                       ->execute([':cost' => $cost, ':uid' => $userId]);
+
+            // 4. Tính ngày hết hạn mới
+            // Logic: Nếu còn hạn -> Cộng tiếp vào ngày cũ. Nếu đã hết hạn -> Tính từ thời điểm hiện tại.
+            $currentExpire = $server['expired_at'];
+            $now = date('Y-m-d H:i:s');
+
+            if ($currentExpire && $currentExpire > $now) {
+                $baseDate = $currentExpire;
+            } else {
+                $baseDate = $now;
+            }
+            
+            $newExpire = date('Y-m-d H:i:s', strtotime($baseDate . " + $daysToAdd days"));
+
+            // 5. Cập nhật Server
+            // Nếu server đang EXPIRED hoặc REJECTED, chuyển về APPROVED (trừ PENDING chờ duyệt lần đầu)
+            $newStatus = ($server['status'] == 'PENDING') ? 'PENDING' : 'APPROVED'; 
+
+            $updateSql = "UPDATE " . $this->table_name . " 
+                          SET expired_at = :exp, 
+                              status = :stt, 
+                              is_active = 1 
+                          WHERE server_id = :sid";
+            
+            $this->conn->prepare($updateSql)->execute([
+                ':exp' => $newExpire,
+                ':stt' => $newStatus,
+                ':sid' => $serverId
+            ]);
+
+            $this->conn->commit();
+            return true; // Thành công
+
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return $e->getMessage(); // Trả về lỗi
+        }
+    }
+
+    // =================================================================
+    // PHẦN 2: CLIENT VIEW (GIỮ NGUYÊN)
+    // =================================================================
 
     public function getHomeServers($filterType = 'open', $versionId = null, $resetId = null) {
         $dateCol = ($filterType == 'test') ? 'sch.alpha_date' : 'sch.beta_date';
         
         $sql = "SELECT s.*, v.version_name, r.reset_name, 
-                        sch.alpha_date as date_alpha, sch.beta_date as date_open, 
-                        st.exp_rate
+                       sch.alpha_date as date_alpha, sch.beta_date as date_open, 
+                       st.exp_rate
                 FROM " . $this->table_name . " s
                 LEFT JOIN mu_versions v ON s.version_id = v.version_id
                 LEFT JOIN reset_types r ON s.reset_id = r.reset_id
@@ -42,14 +149,10 @@ class Server {
     }
 
     public function getDetailFull($id) {
-        $sql = "SELECT 
-                    s.*, 
-                    v.version_name, 
-                    t.type_name as server_type_name, 
-                    r.reset_name, 
-                    p.point_name,
-                    st.exp_rate, st.drop_rate, st.anti_hack, st.point_id,
-                    sch.alpha_date, sch.alpha_time, sch.beta_date, sch.beta_time
+        $sql = "SELECT s.*, v.version_name, t.type_name as server_type_name, 
+                       r.reset_name, p.point_name,
+                       st.exp_rate, st.drop_rate, st.anti_hack, st.point_id,
+                       sch.alpha_date, sch.alpha_time, sch.beta_date, sch.beta_time
                 FROM " . $this->table_name . " s
                 LEFT JOIN mu_versions v ON s.version_id = v.version_id
                 LEFT JOIN server_types t ON s.type_id = t.type_id
@@ -65,7 +168,9 @@ class Server {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // --- PHẦN 2: CREATE / UPDATE (GIỮ NGUYÊN) ---
+    // =================================================================
+    // PHẦN 3: CREATE / ADMIN UPDATE
+    // =================================================================
 
     public function createFull($data) {
         try {
@@ -93,11 +198,6 @@ class Server {
         }
     }
 
-    // --- PHẦN 3: ADMIN & PAGINATION (ĐÃ CẬP NHẬT) ---
-
-    /**
-     * MỚI: Đếm tổng số server để tính số trang
-     */
     public function countAllForAdmin() {
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
         $stmt = $this->conn->prepare($query);
@@ -106,9 +206,6 @@ class Server {
         return $row['total'];
     }
 
-    /**
-     * CẬP NHẬT: Lấy danh sách server có LIMIT và OFFSET
-     */
     public function getAllForAdmin($limit = 10, $offset = 0) {
         $sql = "SELECT s.*, u.username, u.coin as user_balance, v.version_name, r.reset_name 
                 FROM " . $this->table_name . " s 
@@ -116,19 +213,14 @@ class Server {
                 LEFT JOIN mu_versions v ON s.version_id = v.version_id 
                 LEFT JOIN reset_types r ON s.reset_id = r.reset_id 
                 ORDER BY s.created_at DESC
-                LIMIT :limit OFFSET :offset"; // Thêm dòng này
+                LIMIT :limit OFFSET :offset"; 
         
         $stmt = $this->conn->prepare($sql);
-        
-        // Bind giá trị kiểu INT để tránh lỗi SQL
         $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
-        
         $stmt->execute();
         return $stmt;
     }
-
-    // --- PHẦN 4: UTILS (GIỮ NGUYÊN) ---
 
     public function getById($id) {
         $sql = "SELECT s.*, st.exp_rate, st.drop_rate, st.anti_hack, st.point_id, 
@@ -161,10 +253,15 @@ class Server {
             $dateSql = ""; 
             $dateParams = [];
 
+            // Nếu Admin chuyển trạng thái sang APPROVED
             if ($currentStatus !== 'APPROVED' && $newStatus === 'APPROVED') {
                 $package = $data['banner_package'];
                 
-                $price = $this->prices[$package] ?? 0;
+                // Lấy giá và ngày từ cấu hình mới
+                $packInfo = $this->packages[$package] ?? ['price' => 0, 'days' => 7];
+                $price = $packInfo['price'];
+                $daysToAdd = $packInfo['days'];
+
                 if ($price > 0) {
                     $userStmt = $this->conn->prepare("SELECT coin FROM users WHERE user_id = :uid");
                     $userStmt->execute([':uid' => $userId]);
@@ -175,12 +272,8 @@ class Server {
                     }
 
                     $this->conn->prepare("UPDATE users SET coin = coin - :price WHERE user_id = :uid")
-                           ->execute([':price' => $price, ':uid' => $userId]);
+                            ->execute([':price' => $price, ':uid' => $userId]);
                 }
-
-                $daysToAdd = 7;
-                if ($package === 'VIP') $daysToAdd = 10;
-                if ($package === 'SUPER_VIP') $daysToAdd = 14;
 
                 $now = date('Y-m-d H:i:s');
                 $expired = date('Y-m-d H:i:s', strtotime("+$daysToAdd days"));
@@ -248,9 +341,9 @@ class Server {
             die("Lỗi: " . $e->getMessage()); 
         }
     }
-    
+
     public function delete($id) {
-         try {
+        try {
             $this->conn->beginTransaction();
             $stmt = $this->conn->prepare("SELECT banner_image FROM servers WHERE server_id = ?");
             $stmt->execute([$id]);
@@ -273,13 +366,26 @@ class Server {
                     WHERE status = 'APPROVED' 
                     AND expired_at IS NOT NULL 
                     AND expired_at < NOW()";
-            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
         } catch (Exception $e) {
             return false;
         }
     }
+    public function getServerById($id) {
+    $query = "SELECT s.*, p.price as package_price 
+              FROM servers s 
+              LEFT JOIN packages p ON s.package_id = p.id 
+              WHERE s.id = :id LIMIT 1";
+              
+    // *Lưu ý: Nếu bảng servers của bạn đã lưu sẵn cột 'package_price' thì không cần JOIN bảng packages.
+    // Nếu bảng servers lưu giá, câu query đơn giản là: 
+    // "SELECT * FROM servers WHERE id = :id LIMIT 1"
     
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 }
 ?>

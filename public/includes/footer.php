@@ -114,8 +114,8 @@
                 <ul class="footer-links">
                     <li><a href="index.php"><i class="fa-solid fa-chevron-right"></i> Trang Chủ</a></li>
                     <li><a href="index.php?versionId=1#result-listw"><i class="fa-solid fa-chevron-right"></i> Server Mới Ra</a></li>
-                    <li><a href="banner-register.php"><i class="fa-solid fa-chevron-right"></i> Thuê Quảng Cáo</a></li>
-                    <li><a href="login.php"><i class="fa-solid fa-chevron-right"></i> Đăng Nhập Admin</a></li>
+                    <li><a href="index.php?url=banner-register"><i class="fa-solid fa-chevron-right"></i> Thuê Quảng Cáo</a></li>
+                    <li><a href="index.php?url=login"><i class="fa-solid fa-chevron-right"></i> Đăng Nhập Admin</a></li>
                 </ul>
             </div>
 

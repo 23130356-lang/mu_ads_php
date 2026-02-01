@@ -590,9 +590,7 @@
                 </div>
             </div>
         </div>
-<?php 
-// include 'footer.php'; 
-?>
+  <?php include 'includes/footer.php'; ?>
 
 <script>
     // Hàm chạy đếm ngược

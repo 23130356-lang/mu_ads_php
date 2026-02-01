@@ -22,17 +22,11 @@ class AdminHomeBannerController {
             exit;
         }
 
-        // 3. Kiểm tra Quyền (Role)
-        // Lấy role từ Session (nếu có lưu) hoặc query lại DB để chắc chắn
+
         $userRole = $_SESSION['user']['role'] ?? ''; 
         
-        // Nếu session không lưu role, hoặc role không phải ADMIN
         if ($userRole !== 'ADMIN') {
-            // Nếu bạn muốn chắc chắn 100%, hãy query lại DB ở đây để lấy role mới nhất
-            // Nhưng để nhanh, ta check session trước.
-            
-            // Xóa session và đá về trang chủ
-            // session_destroy(); 
+       
             echo "<div style='color:red; text-align:center; margin-top:50px; font-family:sans-serif;'>";
             echo "<h1>TRUY CẬP BỊ TỪ CHỐI!</h1>";
             echo "<p>Tài khoản của bạn không có quyền Admin.</p>";
@@ -41,7 +35,6 @@ class AdminHomeBannerController {
             exit;
         }
 
-        // 4. Kết nối Database (Code cũ)
         $database = new Database();
         $this->db = $database->connect();
         $this->model = new HomeBanner($this->db);
@@ -119,8 +112,7 @@ class AdminHomeBannerController {
     public function delete($id) {
         $imageUrl = $this->model->delete($id);
         if ($imageUrl) {
-            // Sửa đường dẫn xóa file vật lý
-            // Từ controllers ra public: ../public
+
             if (strpos($imageUrl, 'uploads/') !== false) {
                 $filePath = __DIR__ . "/../public/" . $imageUrl;
                 if (file_exists($filePath)) {

@@ -376,8 +376,9 @@ function getBanner($list, $index) {
                                             <?= $svDate ?>
                                         </div>
 
-                                        <div class="stat-box"><a href="<?= $sv['website_url'] ?>" target="_blank" class="btn-view btn-view-svip">XEM NGAY</a></div>
-                                    </div>
+                                        <div class="stat-box">
+                                            <a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view btn-view-svip">XEM NGAY</a>
+                                        </div>                                    </div>
                                     <div class="banner-line">
                                         <?php if (!empty($sv['image_url'])): ?>
                                             <img src="<?= $sv['image_url'] ?>" class="inner-banner-img" alt="<?= $sv['server_name'] ?>">
@@ -418,7 +419,7 @@ function getBanner($list, $index) {
                                         <div class="stat-box"><span class="badge-ver"><?= $sv['version_name'] ?></span></div>
                                         <div class="stat-box text-secondary"><?= $sv['reset_name'] ?></div>
                                         <div class="stat-box text-light"><?= $svDate ?></div>
-                                        <div class="stat-box"><a href="<?= $sv['website_url'] ?>" target="_blank" class="btn-view">XEM</a></div>
+                                        <div class="stat-box"><a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view">XEM</a></div>
                                     </div>
                                     <div class="banner-line">
                                         <?php if (!empty($sv['image_url'])): ?>
@@ -461,7 +462,7 @@ function getBanner($list, $index) {
                                     <div class="stat-box text-secondary small"><?= $sv['reset_name'] ?></div>
                                     <div class="stat-box text-secondary small"><?= $svDate ?></div>
                                     <div class="stat-box">
-                                        <a href="<?= $sv['website_url'] ?>" target="_blank" class="btn-view" style="color: #666; border-color: #444;">Xem</a>
+                                        <a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view" style="color: #666; border-color: #444;">Xem</a>
                                     </div>
                                 </div>
                             </div>
@@ -524,7 +525,7 @@ function getBanner($list, $index) {
 
 </div>
 
-<?php if(file_exists('footer.php')) include 'footer.php'; ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?php include 'includes/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

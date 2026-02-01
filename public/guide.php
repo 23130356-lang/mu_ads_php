@@ -200,14 +200,11 @@
         }
         
         /* Fix khoảng cách Header theo yêu cầu cũ */
-        .main-content-wrapper {
-             /* Nếu header absolute, dùng margin-top lớn ở đây hoặc giữ py-5 như bên dưới */
-        }
+     
     </style>
 </head>
 <body>
 
-  <?php include 'includes/header.php'; ?>
 
 <div class="container py-5 main-content-wrapper" style="margin-top: 80px;">
     <div class="row">

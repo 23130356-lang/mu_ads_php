@@ -244,8 +244,10 @@ if (!function_exists('createSlug')) {
                             </div>
                             
                             <ul class="mh-dropdown mh-user-dropdown">
+                                 <li><a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?url=profile">Thông tin cá nhân</a></li>
                                 <li><a class="mh-dropdown-item" href="#">Quản lý tin đăng</a></li>
-                                <li><a class="mh-dropdown-item" href="#">Nạp Coins</a></li>
+                                <li><a class="mh-dropdown-item" href="index.php?url=huong-dan#section-payment">Nạp Coins</a></li>
+                               
                                 <li style="border-top: 1px solid #333;">
                                     <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>index.php?url=logout" style="color: #ff5555;">
                                         <i class="fa-solid fa-power-off"></i> Đăng Xuất

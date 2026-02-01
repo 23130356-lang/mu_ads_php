@@ -26,6 +26,13 @@ class HomeController {
         $tomorrow     = date('Y-m-d', strtotime('+1 day'));
         $yesterday    = date('Y-m-d', strtotime('-1 day'));
 
+        // ========================================================================
+        // [MỚI] TỰ ĐỘNG QUÉT SERVER HẾT HẠN
+        // Logic: Chạy trước khi lấy dữ liệu hiển thị để đảm bảo danh sách sạch
+        // ========================================================================
+        $this->serverModel->autoRejectExpired();
+
+
         // --- 2. Lấy tham số Filter từ URL ---
         $selectedVersion = $_GET['versionId'] ?? '';
         $selectedReset   = $_GET['reset'] ?? '';
@@ -41,8 +48,8 @@ class HomeController {
         $menuTypes    = $this->masterData->getList('resets');
 
         // --- 4. QUERY LẤY SERVER (Logic gộp từ index.php và model) ---
-        // Sử dụng ServerModel để code gọn hơn, giả định bạn đã có hàm getHomeServers
-        // Nếu chưa có, đây là logic Raw SQL tương đương:
+        // Lưu ý: Vì autoRejectExpired() đã chạy ở trên, các server hết hạn đã chuyển thành REJECTED
+        // nên câu WHERE s.status = 'APPROVED' dưới đây sẽ tự động không lấy chúng nữa.
         
         $query = "SELECT s.*, v.version_name, rt.reset_name, 
                          sch.alpha_date, sch.alpha_time, sch.beta_date, sch.beta_time

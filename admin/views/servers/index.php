@@ -3,133 +3,220 @@ session_start();
 require_once '../../../controllers/AdminServerController.php';
 $controller = new AdminServerController();
 
-// Xử lý xóa nếu có yêu cầu
+// Xử lý xóa (Giữ nguyên)
 if (isset($_GET['delete_id'])) {
     $controller->delete($_GET['delete_id']);
 }
 
-// LẤY DỮ LIỆU: Lúc này index() trả về mảng ['servers' => ..., 'prices' => ...]
+// LẤY DỮ LIỆU
 $data = $controller->index();
-$servers = $data['servers']; // Danh sách server (PDO Object)
-$prices  = $data['prices'];  // Mảng giá tiền (Array)
+$servers = $data['servers']; 
+$prices  = $data['prices'];  
+
+// Lấy thông tin phân trang từ controller trả về
+$pagination = $data['pagination'];
+$page       = $pagination['current_page'];
+$totalPages = $pagination['total_pages'];
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Server | Admin CP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <style>
-        .thumb-sm { width: 60px; height: 40px; object-fit: cover; border-radius: 4px; }
-        .text-price { font-size: 0.85rem; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .table-card { border: none; border-radius: 12px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05); }
+        .table thead th { background-color: #2c3e50; color: white; font-weight: 500; border: none; }
+        .server-thumb { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #dee2e6; }
+        .avatar-circle { width: 32px; height: 32px; background-color: #e9ecef; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #495057; margin-right: 8px; }
+        .status-badge { font-size: 0.75rem; padding: 0.35em 0.65em; }
+        .schedule-box { font-size: 0.8rem; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #dee2e6; margin-bottom: 4px; }
+        .schedule-box.alpha { border-color: #17a2b8; }
+        .schedule-box.open { border-color: #28a745; }
     </style>
 </head>
 <body>
 <div class="d-flex">
     <?php require_once '../../includes/sidebar.php'; ?>
     
-    <div class="flex-grow-1 bg-light p-4" style="height: 100vh; overflow-y: auto;">
-        <h2 class="mb-4">Danh sách Server MU</h2>
+    <div class="flex-grow-1 p-4" style="height: 100vh; overflow-y: auto;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark m-0">Quản lý Server</h3>
+                <span class="text-muted small">Danh sách toàn bộ server đăng ký trên hệ thống</span>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary btn-sm"><i class="bi bi-funnel"></i> Bộ lọc</button>
+            </div>
+        </div>
         
         <?php if(isset($_GET['msg'])): ?>
-            <div class="alert alert-success">Thao tác thành công!</div>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> Thao tác thành công!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         <?php endif; ?>
 
-        <div class="card shadow">
-            <div class="card-body">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Banner</th>
-                            <th style="width: 20%;">Thông tin Server</th>
-                            <th>Chủ Server / Số dư</th> <th>Gói / Giá</th>          <th>Trạng thái</th>
-                            <th>Active</th>
-                            <th style="width: 15%;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while($row = $servers->fetch(PDO::FETCH_ASSOC)): ?>
-                        <tr>
-                            <td><?= $row['server_id'] ?></td>
-                            
-                            <td>
-                                <?php if(!empty($row['banner_image'])): ?>
-                                    <img src="../../../public/<?= $row['banner_image'] ?>" class="thumb-sm">
-                                <?php else: ?>
-                                    <span class="text-muted small">No Image</span>
-                                <?php endif; ?>
-                            </td>
-                            
-                            <td>
-                                <div class="fw-bold text-primary"><?= $row['server_name'] ?></div>
-                                <small class="text-muted">MU: <?= $row['mu_name'] ?></small>
-                            </td>
-
-                            <td>
-                                <div class="fw-bold">👤 <?= $row['username'] ?></div>
-                                <div class="text-danger small">
-                                    💰 Dư: <?= number_format($row['user_balance'] ?? 0) ?> Coin
-                                </div>
-                            </td>
-
-                            <td>
-                                <?php 
-                                    // Lấy giá từ mảng $prices dựa theo gói package
-                                    $pkg = $row['banner_package'];
-                                    $currentPrice = $prices[$pkg] ?? 0;
-                                    
-                                    // Màu sắc badge
-                                    $badgeColor = match($pkg) {
-                                        'SUPER_VIP' => 'bg-danger',
-                                        'VIP'       => 'bg-warning text-dark',
-                                        default     => 'bg-secondary'
-                                    };
-                                ?>
-                                <span class="badge <?= $badgeColor ?> mb-1"><?= $pkg ?></span><br>
-                                <span class="text-muted text-price">Giá: <?= number_format($currentPrice) ?></span>
-
-                                <?php if ($row['status'] == 'PENDING' && ($row['user_balance'] ?? 0) < $currentPrice): ?>
-                                    <div class="text-danger fw-bold small mt-1 border border-danger px-1 rounded bg-white">
-                                        ⚠️ Không đủ tiền
+        <div class="card table-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Server / Banner</th>
+                                <th>Chủ sở hữu & Số dư</th>
+                                <th>Gói Dịch Vụ</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($row = $servers->fetch(PDO::FETCH_ASSOC)): ?>
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3 position-relative">
+                                            <?php if(!empty($row['banner_image'])): ?>
+                                                <img src="../../../public/<?= $row['banner_image'] ?>" class="server-thumb">
+                                            <?php else: ?>
+                                                <div class="server-thumb d-flex align-items-center justify-content-center bg-light text-muted">No Img</div>
+                                            <?php endif; ?>
+                                            <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-dark border border-white">
+                                                #<?= $row['server_id'] ?>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-primary text-truncate" style="max-width: 180px;"><?= $row['server_name'] ?></div>
+                                            <div class="small text-muted fst-italic">MU: <?= $row['mu_name'] ?></div>
+                                            <a href="<?= $row['website_url'] ?>" target="_blank" class="small text-decoration-none"><i class="bi bi-link-45deg"></i> Web</a>
+                                        </div>
                                     </div>
-                                <?php endif; ?>
-                            </td>
+                                </td>
 
-                            <td>
-                                <?php 
-                                    $statusClass = match($row['status']) {
-                                        'APPROVED' => 'text-success',
-                                        'PENDING'  => 'text-warning',
-                                        'REJECTED' => 'text-danger',
-                                        default    => 'text-muted'
-                                    };
-                                ?>
-                                <strong class="<?= $statusClass ?>"><?= $row['status'] ?></strong>
-                            </td>
+                                <td>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="avatar-circle"><?= strtoupper(substr($row['username'], 0, 1)) ?></div>
+                                        <span class="fw-semibold"><?= $row['username'] ?></span>
+                                    </div>
+                                    <?php 
+                                        $balance = $row['user_balance'] ?? 0;
+                                        $pkgPrice = $prices[$row['banner_package']] ?? 0;
+                                        $isLowBalance = ($row['status'] == 'PENDING' && $balance < $pkgPrice);
+                                    ?>
+                                    <div class="small <?= $isLowBalance ? 'text-danger fw-bold' : 'text-secondary' ?>">
+                                        <i class="bi bi-wallet2"></i> <?= number_format($balance) ?> đ
+                                        <?php if($isLowBalance): ?>
+                                            <i class="bi bi-exclamation-circle" title="Không đủ tiền duyệt"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
 
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" disabled <?= $row['is_active'] ? 'checked' : '' ?>>
-                                </div>
-                            </td>
+                                <td>
+                                    <?php 
+                                        $badgeClass = match($row['banner_package']) {
+                                            'SUPER_VIP' => 'bg-danger bg-gradient',
+                                            'VIP'       => 'bg-warning bg-gradient text-dark',
+                                            default     => 'bg-secondary bg-opacity-50 text-dark'
+                                        };
+                                    ?>
+                                    <span class="badge rounded-pill <?= $badgeClass ?> mb-1"><?= $row['banner_package'] ?></span>
+                                    <div class="small text-muted"><?= number_format($pkgPrice) ?> đ</div>
+                                </td>
 
-                            <td>
-                                <a href="edit.php?id=<?= $row['server_id'] ?>" class="btn btn-sm btn-primary mb-1">
-                                    <i class="bi bi-pencil"></i> Sửa/Duyệt
-                                </a>
-                                <a href="index.php?delete_id=<?= $row['server_id'] ?>" 
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa server này?')" 
-                                   class="btn btn-sm btn-danger mb-1">
-                                    <i class="bi bi-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+                                <td>
+                                    <?php 
+                                        $sttClass = match($row['status']) {
+                                            'APPROVED' => 'success',
+                                            'PENDING'  => 'warning',
+                                            'REJECTED' => 'danger',
+                                            'EXPIRED'  => 'secondary',
+                                            default    => 'light'
+                                        };
+                                        $sttIcon = match($row['status']) {
+                                            'APPROVED' => 'bi-check-circle',
+                                            'PENDING'  => 'bi-hourglass-split',
+                                            'REJECTED' => 'bi-x-circle',
+                                            default    => 'bi-circle'
+                                        };
+                                    ?>
+                                    <span class="badge status-badge bg-<?= $sttClass ?>-subtle text-<?= $sttClass ?> border border-<?= $sttClass ?>-subtle rounded-pill">
+                                        <i class="bi <?= $sttIcon ?>"></i> <?= $row['status'] ?>
+                                    </span>
+                                    <div class="form-check form-switch mt-2" title="Ẩn/Hiện Server">
+                                        <input class="form-check-input" type="checkbox" disabled <?= $row['is_active'] ? 'checked' : '' ?>>
+                                        <label class="form-check-label small text-muted">Active</label>
+                                    </div>
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <a href="edit.php?id=<?= $row['server_id'] ?>" class="btn btn-sm btn-outline-primary" title="Sửa / Duyệt">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a href="index.php?delete_id=<?= $row['server_id'] ?>" 
+                                           onclick="return confirm('Xóa vĩnh viễn server này? Hành động không thể phục hồi!')" 
+                                           class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
+    <div class="small text-muted">
+        Hiển thị 
+        <strong><?= ($servers->rowCount() > 0) ? (($page - 1) * $pagination['limit'] + 1) : 0 ?></strong> 
+        đến 
+        <strong><?= ($page - 1) * $pagination['limit'] + $servers->rowCount() ?></strong> 
+        trong tổng số 
+        <strong><?= $pagination['total_records'] ?></strong> server
+    </div>
+
+    <?php if($totalPages > 1): ?>
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <?php 
+            // Logic hiển thị trang thông minh (chỉ hiện 1 vài trang xung quanh trang hiện tại)
+            $range = 2; // Số trang hiển thị 2 bên trang hiện tại
+            for ($i = 1; $i <= $totalPages; $i++): 
+                if ($i == 1 || $i == $totalPages || ($i >= $page - $range && $i <= $page + $range)):
+            ?>
+                <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                </li>
+            <?php elseif (($i == $page - $range - 1) || ($i == $page + $range + 1)): ?>
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            <?php endif; endfor; ?>
+
+            <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <?php endif; ?>
+</div>
+                    <?php if($servers->rowCount() == 0): ?>
+                        <div class="text-center p-5 text-muted">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="64" class="mb-3 opacity-50">
+                            <p>Chưa có dữ liệu server nào.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>

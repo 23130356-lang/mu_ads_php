@@ -78,5 +78,22 @@ class User {
         }
         return false;
     }
+    public function updateInfo($userId, $fullName, $email) {
+        $query = "UPDATE " . $this->table . " 
+                  SET full_name = :full_name, email = :email 
+                  WHERE user_id = :id";
+        
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitize
+        $fullName = htmlspecialchars(strip_tags($fullName));
+        $email    = htmlspecialchars(strip_tags($email));
+
+        $stmt->bindParam(':full_name', $fullName);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':id', $userId);
+
+        return $stmt->execute();
+    }
 }
 ?>

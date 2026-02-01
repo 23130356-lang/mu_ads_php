@@ -28,15 +28,37 @@ class AdminServerController {
         ];
     }
 
-    public function index() {
-        // Truyền thêm danh sách giá sang View
-        $prices = $this->getPackagePrices();
-        $servers = $this->model->getAllForAdmin();
-        
-        // Trả về cả 2 dữ liệu
-        return ['servers' => $servers, 'prices' => $prices];
-    }
+    // File: controllers/AdminServerController.php
 
+public function index() {
+    // 1. Cấu hình phân trang
+    $limit = 10; // Số server hiển thị trên 1 trang
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    if ($page < 1) $page = 1;
+    
+    // 2. Tính Offset (Vị trí bắt đầu lấy dữ liệu)
+    $offset = ($page - 1) * $limit;
+
+    // 3. Lấy tổng số dòng dữ liệu để tính tổng số trang
+    $total_records = $this->model->countAllForAdmin();
+    $total_pages = ceil($total_records / $limit);
+
+    // 4. Lấy danh sách server theo limit và offset
+    $servers = $this->model->getAllForAdmin($limit, $offset);
+    $prices = $this->getPackagePrices();
+    
+    // 5. Trả về mảng dữ liệu bao gồm cả thông tin phân trang
+    return [
+        'servers' => $servers,
+        'prices'  => $prices,
+        'pagination' => [
+            'current_page'  => $page,
+            'total_pages'   => $total_pages,
+            'total_records' => $total_records,
+            'limit'         => $limit
+        ]
+    ];
+}
     public function edit($id) {
         return $this->model->getById($id);
     }

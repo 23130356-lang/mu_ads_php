@@ -122,5 +122,36 @@ class AuthController {
         header("Location: index.php?url=$mode&mode=$mode&error=" . urlencode($errorMsg));
         exit;
     }
+    public function updateProfile() {
+        // 1. Kiểm tra đăng nhập
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user'])) {
+            header("Location: index.php?url=login");
+            exit;
+        }
+
+        // 2. Lấy dữ liệu
+        $userId   = $_SESSION['user_id'];
+        $fullName = $_POST['fullName'] ?? '';
+        $email    = $_POST['email'] ?? '';
+
+        // 3. Validate
+        if (empty($email)) {
+            header("Location: profile.php?error=" . urlencode("Email không được để trống!"));
+            exit;
+        }
+
+        // 4. Gọi Model cập nhật
+        if ($this->userModel->updateInfo($userId, $fullName, $email)) {
+            // [QUAN TRỌNG] Cập nhật lại Session để hiển thị ngay lập tức
+            $_SESSION['user']['full_name'] = $fullName;
+            $_SESSION['user']['email'] = $email;
+            
+            header("Location: profile.php?success=" . urlencode("Cập nhật thông tin thành công!"));
+        } else {
+            header("Location: profile.php?error=" . urlencode("Có lỗi xảy ra, vui lòng thử lại."));
+        }
+        exit;
+    }
 }   
 ?>

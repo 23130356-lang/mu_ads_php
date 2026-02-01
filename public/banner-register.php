@@ -256,7 +256,7 @@
                         </div>
                     </div>
 
-                    <a href="index.php?url=server-register" class="vip-nav-box">
+                    <a href="index.php?url=create-server" class="vip-nav-box">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="me-3">
                                 <i class="fa-solid fa-gem vip-nav-icon"></i>

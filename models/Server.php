@@ -13,12 +13,14 @@ class Server {
         $this->conn = $db; 
     }
 
+    // --- PHẦN 1: CLIENT SIDE (GIỮ NGUYÊN) ---
+
     public function getHomeServers($filterType = 'open', $versionId = null, $resetId = null) {
         $dateCol = ($filterType == 'test') ? 'sch.alpha_date' : 'sch.beta_date';
         
         $sql = "SELECT s.*, v.version_name, r.reset_name, 
-                       sch.alpha_date as date_alpha, sch.beta_date as date_open, 
-                       st.exp_rate
+                        sch.alpha_date as date_alpha, sch.beta_date as date_open, 
+                        st.exp_rate
                 FROM " . $this->table_name . " s
                 LEFT JOIN mu_versions v ON s.version_id = v.version_id
                 LEFT JOIN reset_types r ON s.reset_id = r.reset_id
@@ -63,9 +65,8 @@ class Server {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Tạo mới Server (Giữ nguyên logic cũ)
-     */
+    // --- PHẦN 2: CREATE / UPDATE (GIỮ NGUYÊN) ---
+
     public function createFull($data) {
         try {
              $this->conn->beginTransaction();
@@ -92,22 +93,43 @@ class Server {
         }
     }
 
+    // --- PHẦN 3: ADMIN & PAGINATION (ĐÃ CẬP NHẬT) ---
 
-    public function getAllForAdmin() {
+    /**
+     * MỚI: Đếm tổng số server để tính số trang
+     */
+    public function countAllForAdmin() {
+        $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
+
+    /**
+     * CẬP NHẬT: Lấy danh sách server có LIMIT và OFFSET
+     */
+    public function getAllForAdmin($limit = 10, $offset = 0) {
         $sql = "SELECT s.*, u.username, u.coin as user_balance, v.version_name, r.reset_name 
                 FROM " . $this->table_name . " s 
                 LEFT JOIN users u ON s.user_id = u.user_id 
                 LEFT JOIN mu_versions v ON s.version_id = v.version_id 
                 LEFT JOIN reset_types r ON s.reset_id = r.reset_id 
-                ORDER BY s.created_at DESC";
+                ORDER BY s.created_at DESC
+                LIMIT :limit OFFSET :offset"; // Thêm dòng này
+        
         $stmt = $this->conn->prepare($sql);
+        
+        // Bind giá trị kiểu INT để tránh lỗi SQL
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        
         $stmt->execute();
         return $stmt;
     }
 
-    /**
-     * Lấy chi tiết cơ bản theo ID (Dùng cho trang Edit của Admin/User)
-     */
+    // --- PHẦN 4: UTILS (GIỮ NGUYÊN) ---
+
     public function getById($id) {
         $sql = "SELECT s.*, st.exp_rate, st.drop_rate, st.anti_hack, st.point_id, 
                        sch.alpha_date, sch.alpha_time, sch.beta_date as open_date, sch.beta_time as open_time 
@@ -121,14 +143,11 @@ class Server {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Cập nhật Server + Trừ tiền (Giữ nguyên logic cũ)
-     */
     public function updateFull($data) {
         try {
             $this->conn->beginTransaction();
 
-            // 1. Kiểm tra trạng thái và trừ tiền
+            // 1. Kiểm tra trạng thái hiện tại
             $checkStmt = $this->conn->prepare("SELECT status, user_id, banner_package FROM servers WHERE server_id = :id");
             $checkStmt->execute([':id' => $data['server_id']]);
             $currentServer = $checkStmt->fetch(PDO::FETCH_ASSOC);
@@ -139,10 +158,13 @@ class Server {
             $newStatus     = $data['status'];
             $userId        = $currentServer['user_id'];
             
+            $dateSql = ""; 
+            $dateParams = [];
+
             if ($currentStatus !== 'APPROVED' && $newStatus === 'APPROVED') {
                 $package = $data['banner_package'];
-                $price   = $this->prices[$package] ?? 0;
-
+                
+                $price = $this->prices[$package] ?? 0;
                 if ($price > 0) {
                     $userStmt = $this->conn->prepare("SELECT coin FROM users WHERE user_id = :uid");
                     $userStmt->execute([':uid' => $userId]);
@@ -153,21 +175,36 @@ class Server {
                     }
 
                     $this->conn->prepare("UPDATE users SET coin = coin - :price WHERE user_id = :uid")
-                         ->execute([':price' => $price, ':uid' => $userId]);
+                           ->execute([':price' => $price, ':uid' => $userId]);
                 }
+
+                $daysToAdd = 7;
+                if ($package === 'VIP') $daysToAdd = 10;
+                if ($package === 'SUPER_VIP') $daysToAdd = 14;
+
+                $now = date('Y-m-d H:i:s');
+                $expired = date('Y-m-d H:i:s', strtotime("+$daysToAdd days"));
+
+                $dateSql = ", approved_at = :app_at, expired_at = :exp_at";
+                $dateParams = [
+                    ':app_at' => $now,
+                    ':exp_at' => $expired
+                ];
             }
 
-            // 2. Update Server Info
             $imgSql = !empty($data['banner_image']) ? ", banner_image = :img" : "";
+            
             $sql1 = "UPDATE servers SET 
                         server_name = :name, mu_name = :mu, website_url = :web, fanpage_url = :fan, 
                         description = :desc, slogan = :slogan, version_id = :ver, type_id = :type, 
                         reset_id = :reset, banner_package = :pkg, status = :status, is_active = :active
-                        $imgSql
+                        $imgSql 
+                        $dateSql 
                      WHERE server_id = :id";
             
             $stmt1 = $this->conn->prepare($sql1);
-           $params1 = [
+
+            $params1 = [
                 ':name' => $data['server_name'], 
                 ':mu' => $data['mu_name'], 
                 ':web' => $data['website_url'], 
@@ -180,18 +217,22 @@ class Server {
                 ':pkg' => $data['banner_package'], 
                 ':status' => $data['status'], 
                 ':id' => $data['server_id'], 
-                // SỬA DÒNG NÀY: Đảm bảo chỉ trả về 0 hoặc 1
                 ':active' => (!empty($data['is_active']) ? 1 : 0)
             ];
-            if(!empty($data['banner_image'])) $params1[':img'] = $data['banner_image'];
+
+            if(!empty($data['banner_image'])) {
+                $params1[':img'] = $data['banner_image'];
+            }
+
+            if (!empty($dateParams)) {
+                $params1 = array_merge($params1, $dateParams);
+            }
             
             $stmt1->execute($params1);
 
-            // 3. Update Stats
             $this->conn->prepare("UPDATE server_stats SET exp_rate = :exp, drop_rate = :drop, anti_hack = :anti, point_id = :point WHERE server_id = :id")
                  ->execute([':exp' => $data['exp_rate'], ':drop' => $data['drop_rate'], ':anti' => $data['anti_hack'], ':point' => $data['point_id'], ':id' => $data['server_id']]);
 
-            // 4. Update Schedule
             $this->conn->prepare("UPDATE server_schedules SET alpha_date = :ad, alpha_time = :at, beta_date = :bd, beta_time = :bt WHERE server_id = :id")
                  ->execute([
                     ':ad' => !empty($data['alpha_date']) ? $data['alpha_date'] : NULL, ':at' => $data['alpha_time'],
@@ -224,5 +265,21 @@ class Server {
             return false;
         }
     }
+
+    public function autoRejectExpired() {
+        try {
+            $sql = "UPDATE servers 
+                    SET status = 'EXPIRED', is_active = 0 
+                    WHERE status = 'APPROVED' 
+                    AND expired_at IS NOT NULL 
+                    AND expired_at < NOW()";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+    
 }
 ?>

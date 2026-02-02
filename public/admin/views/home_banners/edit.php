@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../../controllers/AdminHomeBannerController.php';
+require_once '../../../../controllers/AdminHomeBannerController.php';
 $controller = new AdminHomeBannerController();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

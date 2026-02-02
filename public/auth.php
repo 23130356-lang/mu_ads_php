@@ -245,43 +245,48 @@ $activeTab = (isset($_GET['mode']) && $_GET['mode'] == 'register') ? 'register' 
                 <p class="form-subtitle">Gia nhập cộng đồng MU lớn nhất VN</p>
 
                 <form action="index.php?url=register-action" method="post">
-                    <div class="mu-form-group">
-                        <input type="text" class="mu-input" name="username" placeholder="Tên đăng nhập (viết liền)" required>
-                        <i class="fa-solid fa-user mu-input-icon"></i>
-                    </div>
+    <div class="mu-form-group">
+        <input type="text" class="mu-input" name="username" placeholder="Tên đăng nhập (viết liền)" required>
+        <i class="fa-solid fa-user mu-input-icon"></i>
+    </div>
 
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="mu-form-group">
-                                <input type="email" class="mu-input" name="email" placeholder="Email" required>
-                                <i class="fa-solid fa-envelope mu-input-icon"></i>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mu-form-group">
-                                <input type="text" class="mu-input" name="phone" placeholder="SĐT / Zalo" required>
-                                <i class="fa-solid fa-phone mu-input-icon"></i>
-                            </div>
-                        </div>
-                    </div>
+    <div class="mu-form-group">
+        <input type="text" class="mu-input" name="full_name" placeholder="Họ và tên hiển thị" required>
+        <i class="fa-solid fa-id-card mu-input-icon"></i> 
+    </div>
 
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="mu-form-group">
-                                <input type="password" class="mu-input" name="password" placeholder="Mật khẩu" required>
-                                <i class="fa-solid fa-lock mu-input-icon"></i>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mu-form-group">
-                                <input type="password" class="mu-input" name="confirmPassword" placeholder="Nhập lại MK" required>
-                                <i class="fa-solid fa-shield-halved mu-input-icon"></i>
-                            </div>
-                        </div>
-                    </div>
+    <div class="row g-2">
+        <div class="col-6">
+            <div class="mu-form-group">
+                <input type="email" class="mu-input" name="email" placeholder="Email" required>
+                <i class="fa-solid fa-envelope mu-input-icon"></i>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="mu-form-group">
+                <input type="text" class="mu-input" name="phone" placeholder="SĐT / Zalo" required>
+                <i class="fa-solid fa-phone mu-input-icon"></i>
+            </div>
+        </div>
+    </div>
 
-                    <button type="submit" class="btn btn-mu-submit">KHỞI TẠO TÀI KHOẢN</button>
-                </form>
+    <div class="row g-2">
+        <div class="col-6">
+            <div class="mu-form-group">
+                <input type="password" class="mu-input" name="password" placeholder="Mật khẩu" required>
+                <i class="fa-solid fa-lock mu-input-icon"></i>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="mu-form-group">
+                <input type="password" class="mu-input" name="confirmPassword" placeholder="Nhập lại MK" required>
+                <i class="fa-solid fa-shield-halved mu-input-icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-mu-submit">KHỞI TẠO TÀI KHOẢN</button>
+</form>
             </div>
 
             <div class="divider"></div>

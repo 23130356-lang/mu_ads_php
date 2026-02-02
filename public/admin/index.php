@@ -1,9 +1,13 @@
 <?php
 session_start();
-require_once '../../../controllers/AdminServerController.php';
+// FILE: public/admin/index.php
+
+// 1. SỬA ĐƯỜNG DẪN REQUIRE (Lùi 2 cấp: ../../)
+require_once '../../controllers/AdminServerController.php';
+
 $controller = new AdminServerController();
 
-// Xử lý xóa (Giữ nguyên)
+// Xử lý xóa
 if (isset($_GET['delete_id'])) {
     $controller->delete($_GET['delete_id']);
 }
@@ -13,7 +17,7 @@ $data = $controller->index();
 $servers = $data['servers']; 
 $prices  = $data['prices'];  
 
-// Lấy thông tin phân trang từ controller trả về
+// Lấy thông tin phân trang
 $pagination = $data['pagination'];
 $page       = $pagination['current_page'];
 $totalPages = $pagination['total_pages'];
@@ -35,14 +39,11 @@ $totalPages = $pagination['total_pages'];
         .server-thumb { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #dee2e6; }
         .avatar-circle { width: 32px; height: 32px; background-color: #e9ecef; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #495057; margin-right: 8px; }
         .status-badge { font-size: 0.75rem; padding: 0.35em 0.65em; }
-        .schedule-box { font-size: 0.8rem; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #dee2e6; margin-bottom: 4px; }
-        .schedule-box.alpha { border-color: #17a2b8; }
-        .schedule-box.open { border-color: #28a745; }
     </style>
 </head>
 <body>
 <div class="d-flex">
-    <?php require_once '../../includes/sidebar.php'; ?>
+    <?php require_once 'includes/sidebar.php'; ?>
     
     <div class="flex-grow-1 p-4" style="height: 100vh; overflow-y: auto;">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -82,7 +83,7 @@ $totalPages = $pagination['total_pages'];
                                     <div class="d-flex align-items-center">
                                         <div class="me-3 position-relative">
                                             <?php if(!empty($row['banner_image'])): ?>
-                                                <img src="../../../public/<?= $row['banner_image'] ?>" class="server-thumb">
+                                                <img src="../<?= $row['banner_image'] ?>" class="server-thumb">
                                             <?php else: ?>
                                                 <div class="server-thumb d-flex align-items-center justify-content-center bg-light text-muted">No Img</div>
                                             <?php endif; ?>
@@ -137,25 +138,15 @@ $totalPages = $pagination['total_pages'];
                                             'EXPIRED'  => 'secondary',
                                             default    => 'light'
                                         };
-                                        $sttIcon = match($row['status']) {
-                                            'APPROVED' => 'bi-check-circle',
-                                            'PENDING'  => 'bi-hourglass-split',
-                                            'REJECTED' => 'bi-x-circle',
-                                            default    => 'bi-circle'
-                                        };
                                     ?>
                                     <span class="badge status-badge bg-<?= $sttClass ?>-subtle text-<?= $sttClass ?> border border-<?= $sttClass ?>-subtle rounded-pill">
-                                        <i class="bi <?= $sttIcon ?>"></i> <?= $row['status'] ?>
+                                        <?= $row['status'] ?>
                                     </span>
-                                    <div class="form-check form-switch mt-2" title="Ẩn/Hiện Server">
-                                        <input class="form-check-input" type="checkbox" disabled <?= $row['is_active'] ? 'checked' : '' ?>>
-                                        <label class="form-check-label small text-muted">Active</label>
-                                    </div>
                                 </td>
 
                                 <td class="text-end pe-4">
                                     <div class="btn-group">
-                                        <a href="edit.php?id=<?= $row['server_id'] ?>" class="btn btn-sm btn-outline-primary" title="Sửa / Duyệt">
+                                        <a href="views/servers/edit.php?id=<?= $row['server_id'] ?>" class="btn btn-sm btn-outline-primary" title="Sửa / Duyệt">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
                                         <a href="index.php?delete_id=<?= $row['server_id'] ?>" 
@@ -169,52 +160,24 @@ $totalPages = $pagination['total_pages'];
                             <?php endwhile; ?>
                         </tbody>
                     </table>
+                    
+                    <?php if($servers->rowCount() > 0): ?>
                     <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
-    <div class="small text-muted">
-        Hiển thị 
-        <strong><?= ($servers->rowCount() > 0) ? (($page - 1) * $pagination['limit'] + 1) : 0 ?></strong> 
-        đến 
-        <strong><?= ($page - 1) * $pagination['limit'] + $servers->rowCount() ?></strong> 
-        trong tổng số 
-        <strong><?= $pagination['total_records'] ?></strong> server
-    </div>
-
-    <?php if($totalPages > 1): ?>
-    <nav aria-label="Page navigation">
-        <ul class="pagination pagination-sm mb-0">
-            <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-
-            <?php 
-            // Logic hiển thị trang thông minh (chỉ hiện 1 vài trang xung quanh trang hiện tại)
-            $range = 2; // Số trang hiển thị 2 bên trang hiện tại
-            for ($i = 1; $i <= $totalPages; $i++): 
-                if ($i == 1 || $i == $totalPages || ($i >= $page - $range && $i <= $page + $range)):
-            ?>
-                <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                </li>
-            <?php elseif (($i == $page - $range - 1) || ($i == $page + $range + 1)): ?>
-                <li class="page-item disabled"><span class="page-link">...</span></li>
-            <?php endif; endfor; ?>
-
-            <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <?php endif; ?>
-</div>
-                    <?php if($servers->rowCount() == 0): ?>
-                        <div class="text-center p-5 text-muted">
-                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="64" class="mb-3 opacity-50">
-                            <p>Chưa có dữ liệu server nào.</p>
-                        </div>
+                        <div class="small text-muted">Trang <?= $page ?> / <?= $totalPages ?></div>
+                        <?php if($totalPages > 1): ?>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
+                        <?php endif; ?>
+                    </div>
+                    <?php else: ?>
+                        <div class="text-center p-5 text-muted">Chưa có dữ liệu.</div>
                     <?php endif; ?>
                 </div>
             </div>

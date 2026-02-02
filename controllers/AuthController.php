@@ -32,13 +32,13 @@ class AuthController {
 
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $data = [
-            'username' => $username,
-            'password' => $hashedPassword,
-            'email'    => $email,
-            'phone'    => $phone,
-            'role'     => 'USER' 
-        ];
+       $data = [
+        'username'  => $_POST['username'],
+        'password'  => password_hash($_POST['password'], PASSWORD_DEFAULT), // Nhớ hash mật khẩu
+        'email'     => $_POST['email'],
+        'phone'     => $_POST['phone'],
+        'full_name' => $_POST['full_name'] // <--- QUAN TRỌNG: Dòng này đang bị thiếu
+    ];
 
         if ($this->userModel->create($data)) {
             header("Location: index.php?url=login&mode=login&success=" . urlencode("Đăng ký thành công! Hãy đăng nhập."));
@@ -71,7 +71,7 @@ class AuthController {
 
             if (isset($user['role']) && $user['role'] === 'ADMIN') {
                 
-                header("Location: ../admin/index.php"); 
+                header("Location: ./admin/index.php"); 
                 exit; 
             }
 

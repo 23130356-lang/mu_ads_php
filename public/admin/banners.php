@@ -1,8 +1,10 @@
 <?php
 session_start();
-// FILE: admin/banners.php
-// Thay đổi đường dẫn include
-require_once '../controllers/AdminHomeBannerController.php';
+// FILE: public/admin/banners.php
+
+// 1. SỬA ĐƯỜNG DẪN REQUIRE (Lùi 2 cấp: ../../)
+require_once '../../controllers/AdminHomeBannerController.php';
+
 $controller = new AdminHomeBannerController();
 
 if (isset($_GET['delete_id'])) {
@@ -63,7 +65,7 @@ $banners = $controller->index();
                                     <?php if(strpos($row['image_url'], 'http') === 0): ?>
                                         <img src="<?= $row['image_url'] ?>" class="thumb-img">
                                     <?php else: ?>
-                                        <img src="../public/<?= $row['image_url'] ?>" class="thumb-img">
+                                        <img src="../<?= $row['image_url'] ?>" class="thumb-img">
                                     <?php endif; ?>
                                 </td>
                                 <td><span class="badge bg-info"><?= $row['position_code'] ?></span></td>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../../controllers/AdminServerController.php';
+require_once '../../../../controllers/AdminServerController.php';
 $controller = new AdminServerController();
 
 // Xử lý cập nhật

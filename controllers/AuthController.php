@@ -71,7 +71,7 @@ class AuthController {
 
             if (isset($user['role']) && $user['role'] === 'ADMIN') {
                 
-                header("Location: ../admin/views/home_banners/index.php"); 
+                header("Location: ../admin/index.php"); 
                 exit; 
             }
 

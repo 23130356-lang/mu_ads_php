@@ -122,7 +122,7 @@ $metaDesc .= "Reset: {$server->stats->resetTypeName}. Thể loại: {$server->se
             font-weight: 900;
             text-transform: uppercase;
             background: linear-gradient(180deg, #fff 10%, #ffcc00 50%, #b8860b 90%);
-            -webkit-background-clip: text;
+          -webkit-background-clip: text;    
             -webkit-text-fill-color: transparent;
             text-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
             margin-bottom: 5px;

@@ -216,7 +216,7 @@ function getBanner($list, $index) {
                     <img src="<?= $banner['image_url'] ?>" class="real-ad-img" alt="Quảng cáo">
                 </a>
             <?php else: ?>
-                <a href="public/index.php?url=banner-register" class="mu-item-frame ads-placeholder v-banner-box">
+                <a href="index.php?url=banner-register" class="mu-item-frame ads-placeholder v-banner-box">
                     <div class="ads-content text-center">
                         <i class="fa-solid fa-plus click-icon"></i>
                         <div class="ads-text">Banner Trái<br>Vị trí <?= $i + 1 ?></div>
@@ -248,7 +248,7 @@ function getBanner($list, $index) {
                 </div>
             </div>
         <?php else: ?>
-            <a href="/banner-register" class="mu-item-frame ads-placeholder mb-3" style="width: 100%; height: 320px;">
+            <a href="index.php?url=banner-register" class="mu-item-frame ads-placeholder mb-3" style="width: 100%; height: 320px;">
                 <div class="ads-content text-center">
                     <span class="ads-text fs-5 text-warning">VỊ TRÍ HERO BANNER (VIP)</span>
                 </div>
@@ -262,7 +262,7 @@ function getBanner($list, $index) {
                     <img src="<?= $banner['image_url'] ?>" class="real-ad-img">
                 </a>
             <?php else: ?>
-                <a href="/banner-register" class="mu-item-frame ads-placeholder h-banner-box">
+                <a href="index.php?url=banner-register" class="mu-item-frame ads-placeholder h-banner-box">
                     <div class="ads-content d-flex align-items-center gap-3">
                         <i class="fa-regular fa-image click-icon mb-0"></i>
                         <div class="text-start">
@@ -513,7 +513,7 @@ function getBanner($list, $index) {
                     <img src="<?= $banner['image_url'] ?>" class="real-ad-img" alt="Quảng cáo">
                 </a>
             <?php else: ?>
-                <a href="/banner-register" class="mu-item-frame ads-placeholder v-banner-box">
+                <a href="index.php?url=banner-register" class="mu-item-frame ads-placeholder v-banner-box">
                     <div class="ads-content text-center">
                         <i class="fa-solid fa-plus click-icon"></i>
                         <div class="ads-text">Banner Phải<br>Vị trí <?= $i + 4 ?></div>

@@ -17,7 +17,7 @@ $yesterdayStr = date('d/m/Y', strtotime('-1 day'));
 $tomorrowStr  = date('d/m/Y', strtotime('+1 day'));
 
 // Giả lập biến title/description nếu chưa có (tránh lỗi undefined)
-$pageTitle = $pageTitle ?? 'Mu Mới Ra | Munoria Portal';
+$pageTitle = $pageTitle ?? 'Mu Mới Ra | Mumoira Portal';
 $metaDescription = $metaDescription ?? 'Cổng game Mu Online, Mu Mobile mới ra mắt.';
 $canonicalUrl = $canonicalUrl ?? '';
 
@@ -42,8 +42,8 @@ function getBanner($list, $index) {
     <meta property="og:title" content="<?= $pageTitle ?>" />
     <meta property="og:description" content="<?= $metaDescription ?>" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= !empty($canonicalUrl) ? $canonicalUrl : 'https://munoria.mobile/' ?>" />
-    <meta property="og:image" content="https://munoria.mobile/images/thumbnail-share.jpg" />
+    <meta property="og:url" content="<?= !empty($canonicalUrl) ? $canonicalUrl : 'https://mumoira.mobile/' ?>" />
+    <meta property="og:image" content="https://mumoira.mobile/images/thumbnail-share.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

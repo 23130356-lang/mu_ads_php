@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hướng Dẫn & Quy Định | MUNORIA.MOBILE</title>
+    <title>Hướng Dẫn & Quy Định | MUMOIRA.MOBI</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -239,7 +239,7 @@
 
             <div id="section-rules" class="content-section">
                 <h2 class="section-header"><i class="fa-solid fa-scale-balanced"></i> 1. Quy định đăng tin</h2>
-                <p>Chào mừng các Admin MU Online đến với <strong>MUNORIA.MOBILE</strong>. Để xây dựng một cộng đồng game lành mạnh, uy tín và chất lượng, chúng tôi yêu cầu tất cả các bài đăng phải tuân thủ nghiêm ngặt các quy định sau:</p>
+                <p>Chào mừng các Admin MU Online đến với <strong>MUMOIRA.MOBI</strong>. Để xây dựng một cộng đồng game lành mạnh, uy tín và chất lượng, chúng tôi yêu cầu tất cả các bài đăng phải tuân thủ nghiêm ngặt các quy định sau:</p>
 
                 <ul class="list-unstyled mt-3">
                     <li class="mb-3"><i class="fa-solid fa-check text-gold me-2"></i> <strong>Thông tin trung thực:</strong> Các thông tin về phiên bản (Season), tỉ lệ Drop, Exp, tính năng reset/keep point phải chính xác 100% với thực tế trong game.</li>

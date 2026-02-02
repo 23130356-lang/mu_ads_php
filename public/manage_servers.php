@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Quản Lý Server | MUNORIA.MOBILE</title>
+    <title>Quản Lý Server | MUMOIRA.MOBI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,7 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
-        /* === CSS GIỮ NGUYÊN === */
         :root { --mu-bg: #050505; --mu-gold: #cfaa56; --mu-red: #8b0000; --mu-red-bright: #dc3545; --mu-glass: rgba(15, 15, 15, 0.95); --mu-border: #3d2b1f; }
         body { background-color: var(--mu-bg); color: #d1d1d1; font-family: 'Rajdhani', sans-serif; background-image: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.95)), url('https://wallpaperaccess.com/full/1524368.jpg'); background-size: cover; background-attachment: fixed; background-position: center; }
         h1, h2, h3, h4, h5 { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 1px; }

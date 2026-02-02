@@ -156,8 +156,8 @@ if (!function_exists('createSlug')) {
     <div class="mh-container">
         <a href="<?php echo $baseUrl; ?>index.php" class="mh-logo-link">
             <div class="mh-brand-main">
-                <span class="mh-brand-gold metal-text">MUNORIA</span>
-                <span class="mh-brand-platinum metal-text">.MOBILE</span>
+                <span class="mh-brand-gold metal-text">MUMOIRA</span>
+                <span class="mh-brand-platinum metal-text">.MOBI</span>
             </div>
             <div class="mh-brand-desc">Huyền Thoại Trở Lại</div>
         </a>

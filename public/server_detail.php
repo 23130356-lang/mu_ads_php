@@ -11,7 +11,7 @@
 $rawName = strtolower($server->serverName);
 $slug = str_replace([' ', 'đ'], ['-', 'd'], $rawName);
 // Xử lý tiếng việt có dấu thành không dấu kỹ hơn nếu cần (ở đây làm đơn giản theo JSP cũ)
-$finalUrl = "https://munoria.mobile/server/" . $slug . "-" . $server->id;
+$finalUrl = "https://mumoira.mobi/server/" . $slug . "-" . $server->id;
 
 // Format ngày tháng hiển thị
 $alphaDateDisplay = $server->schedule->alphaDate ? date('d/m/Y', strtotime($server->schedule->alphaDate)) : 'Chưa cập nhật';
@@ -29,7 +29,7 @@ $metaDesc .= "Reset: {$server->stats->resetTypeName}. Thể loại: {$server->se
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title><?= $server->serverName ?> - Mu Mới Ra Hôm Nay | Munoria Portal</title>
+    <title><?= $server->serverName ?> - Mu Mới Ra Hôm Nay | MuMoiRa Portal</title>
     <meta name="description" content="<?= htmlspecialchars($metaDesc) ?>">
     <meta name="keywords" content="mu moi ra, mu online, <?= $server->serverName ?>, mu private, game mu, mu mobile, mu pc, <?= $slug ?>, <?= $server->serverTypeName ?>">
     <meta name="robots" content="index, follow">
@@ -41,9 +41,9 @@ $metaDesc .= "Reset: {$server->stats->resetTypeName}. Thể loại: {$server->se
     <meta property="og:title" content="Mu <?= $server->serverName ?> - Ra Mắt Máy Chủ Mới" />
     <meta property="og:description" content="<?= htmlspecialchars($metaDesc) ?>" />
     <meta property="og:url" content="<?= $finalUrl ?>" />
-    <meta property="og:site_name" content="Munoria Mobile" />
+    <meta property="og:site_name" content="Mumoira Mobi" />
     <?php if (!empty($server->bannerImage)): ?>
-        <meta property="og:image" content="https://munoria.mobile<?= $server->bannerImage ?>" />
+        <meta property="og:image" content="https://mumoia.mobi<?= $server->bannerImage ?>" />
         <meta property="og:image:alt" content="Banner Mu <?= $server->serverName ?>" />
     <?php endif; ?>
 
@@ -55,12 +55,12 @@ $metaDesc .= "Reset: {$server->stats->resetTypeName}. Thể loại: {$server->se
             "@type": "ListItem",
             "position": 1,
             "name": "Trang Chủ",
-            "item": "https://munoria.mobile/"
+            "item": "https://mumoira.mobi/"
         },{
             "@type": "ListItem",
             "position": 2,
             "name": "Danh Sách Server",
-            "item": "https://munoria.mobile/#result-list"
+            "item": "https://mumoira.mobi/#result-list"
         },{
             "@type": "ListItem",
             "position": 3,

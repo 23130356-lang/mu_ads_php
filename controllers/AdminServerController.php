@@ -89,7 +89,7 @@ public function index() {
             ];
 
             if ($this->model->updateFull($data)) {
-                header("Location: index.php?msg=updated");
+                header("Location: ../../index.php?msg=updated");
             } else {
                 echo "Lỗi cập nhật!";
             }
@@ -102,7 +102,7 @@ public function index() {
              $filePath = __DIR__ . "/../public/" . $img;
              if (file_exists($filePath) && is_file($filePath)) unlink($filePath);
         }
-        header("Location: index.php?msg=deleted");
+        header("Location: ../../index.php?msg=deleted");
     }
 
     private function handleUpload() {

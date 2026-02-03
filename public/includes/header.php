@@ -186,7 +186,7 @@ if (!function_exists('createSlug')) {
                         <?php if (!empty($menuVersions)): ?>
                             <?php foreach ($menuVersions as $ver): ?>
                                 <li>
-                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>mu/<?php echo createSlug($ver['version_name']); ?>-v<?php echo $ver['version_id']; ?>">
+                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?><?php echo createSlug($ver['version_name']); ?>-v<?php echo $ver['version_id']; ?>">
                                         <?php echo htmlspecialchars($ver['version_name']); ?>
                                     </a>
                                 </li>
@@ -205,7 +205,7 @@ if (!function_exists('createSlug')) {
                         <?php if (!empty($menuTypes)): ?>
                             <?php foreach ($menuTypes as $type): ?>
                                 <li>
-                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?>mu/<?php echo createSlug($type['reset_name']); ?>-r<?php echo $type['reset_id']; ?>">
+                                    <a class="mh-dropdown-item" href="<?php echo $baseUrl; ?><?php echo createSlug($type['reset_name']); ?>-r<?php echo $type['reset_id']; ?>">
                                         <?php echo htmlspecialchars($type['reset_name']); ?>
                                     </a>
                                 </li>

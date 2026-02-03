@@ -163,16 +163,16 @@ function getBanner($list, $index) {
         /* VIP Wrapper */
         .vip-wrapper { position: relative; margin-bottom: 10px; border-radius: 4px; padding: 2px; background: linear-gradient(110deg, #333 30%, #cfaa56 45%, #fff 50%, #cfaa56 55%, #333 70%); background-size: 200% 100%; animation: shimmerGold 2.5s linear infinite; box-shadow: 0 0 5px rgba(207, 170, 86, 0.2); }
         .vip-content { position: relative; z-index: 2; background: linear-gradient(90deg, #1a1a1a 0%, #0c0c0c 100%); border-radius: 3px; }
-        .name-vip { color: var(--mu-gold); font-size: 1.1rem; font-weight: 700; font-family: 'Cinzel', serif; }
+        .name-vip { color: var(--mu-gold); font-size: 1.15rem; font-weight: 700; font-family: 'Cinzel', serif; }
         .btn-view { border: 1px solid var(--mu-gold-dark); color: var(--mu-gold); padding: 4px 12px; font-size: 0.75rem; font-family: 'Cinzel', serif; }
         .btn-view:hover { background: var(--mu-gold); color: #000; }
-        .vip-content .inner-banner-img { height: 38px; border-color: #444; }
+        .vip-content .inner-banner-img { height: 45px; border-color: #444; }
 
         /* Normal Wrapper */
-        .normal-wrapper { border-bottom: 1px solid #222; transition: 0.2s; }
-        .normal-wrapper:hover { background-color: rgba(255, 255, 255, 0.02); }
-        .name-normal { color: #ccc; font-weight: 600; font-size: 0.95rem; }
-        .badge-ver { background: #222; border: 1px solid #444; color: #aaa; padding: 2px 6px; font-size: 0.7rem; }
+        .normal-wrapper { border-bottom: 1px solid #5b5b5b; transition: 0.5s; }
+        .normal-wrapper:hover { background-color: rgba(220, 220, 220, 0.35); }
+        .name-normal { color: #dddddd; font-weight: 600; font-size: 1.2rem; }
+        .badge-ver { background: #222; border: 1px solid #aeaeae; color: #fefefe; padding: 2px 6px; font-size: 0.7rem; }
         .badge-svip { background: #d00; color: #fff; font-size: 0.7rem; padding: 1px 5px; font-weight: bold; border-radius: 2px; }
 
         /* Widget Lịch & Badge Ngày */
@@ -417,7 +417,9 @@ function getBanner($list, $index) {
                                 <div class="col-right-wrapper">
                                     <div class="stats-line">
                                         <div class="stat-box"><span class="badge-ver"><?= $sv['version_name'] ?></span></div>
-                                        <div class="stat-box text-secondary"><?= $sv['reset_name'] ?></div>
+                                        <div class="stat-box" style="color: #dbd2b2;">
+                                            <?= $sv['reset_name'] ?>
+                                        </div>
                                         <div class="stat-box text-light"><?= $svDate ?></div>
                                         <div class="stat-box"><a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view">XEM</a></div>
                                     </div>
@@ -459,8 +461,9 @@ function getBanner($list, $index) {
                                     <div class="stat-box">
                                         <span class="badge-ver" style="border:none; background:transparent;"><?= $sv['version_name'] ?></span>
                                     </div>
-                                    <div class="stat-box text-secondary small"><?= $sv['reset_name'] ?></div>
-                                    <div class="stat-box text-secondary small"><?= $svDate ?></div>
+                                    <div class="stat-box small" style="color: #aeb5b6;"><?= $sv['reset_name'] ?></div>
+                                     <div class="stat-box small" style="color: #aeb5b6;"><?= $svDate ?></div>
+
                                     <div class="stat-box">
                                         <a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view" style="color: #666; border-color: #444;">Xem</a>
                                     </div>

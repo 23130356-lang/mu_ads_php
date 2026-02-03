@@ -65,7 +65,7 @@ class AdminHomeBannerController {
 
             if ($this->model->create($data)) {
                 // Sửa lại đường dẫn chuyển hướng cho đúng với view
-                header("Location: index.php?msg=created"); 
+                header("Location: ../../index.php?msg=created"); 
                 exit;
             } else {
                 echo "Lỗi hệ thống!";
@@ -94,7 +94,7 @@ class AdminHomeBannerController {
             ];
 
             if ($this->model->update($data)) {
-                header("Location: index.php?msg=updated");
+                header("Location: ../../index.php?msg=updated");
                 exit;
             } else {
                 echo "Lỗi cập nhật!";
@@ -113,7 +113,7 @@ class AdminHomeBannerController {
                     unlink($filePath);
                 }
             }
-            header("Location: index.php?msg=deleted");
+            header("Location: ../../index.php?msg=deleted");
             exit;
         } else {
             echo "Lỗi xóa!";

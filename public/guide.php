@@ -299,7 +299,7 @@
                         <tbody>
                         <tr>
                             <td class="fw-bold">CƠ BẢN</td>
-                            <td>1.000</td>
+                            <td>MIỄN PHÍ</td>
                             <td>7 Ngày</td>
                             <td class="text-start ps-4">
                                 <small>• Hiển thị danh sách thường</small><br>
@@ -308,7 +308,7 @@
                         </tr>
                         <tr class="row-vip">
                             <td class="fw-bold text-gold"><i class="fa-solid fa-star me-1"></i> VIP</td>
-                            <td class="fw-bold text-gold">5.000</td>
+                            <td class="fw-bold text-gold">100</td>
                             <td>10 Ngày</td>
                             <td class="text-start ps-4">
                                 <small class="text-gold">• Ưu tiên xếp trên gói thường</small><br>
@@ -318,7 +318,7 @@
                         </tr>
                         <tr class="row-super-vip">
                             <td class="fw-bold text-red"><i class="fa-solid fa-crown me-1"></i> SUPER VIP</td>
-                            <td class="fw-bold text-red">10.000</td>
+                            <td class="fw-bold text-red">200</td>
                             <td>14 Ngày</td>
                             <td class="text-start ps-4">
                                 <strong class="text-red">• VỊ TRÍ TOP 1 TRANG CHỦ</strong><br>

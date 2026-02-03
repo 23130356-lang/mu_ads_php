@@ -8,10 +8,10 @@ class HomeBannerController {
     private $db;
 
     private $configs = [
-        'HERO'          => ['price' => 500000, 'limit' => 1, 'days' => 30],
-        'LEFT_SIDEBAR'  => ['price' => 200000, 'limit' => 5, 'days' => 30],
-        'RIGHT_SIDEBAR' => ['price' => 200000, 'limit' => 5, 'days' => 30],
-        'STD'           => ['price' => 50000,  'limit' => 10, 'days' => 7]
+        'HERO'          => ['price' => 500000, 'limit' => 1, 'days' => 7],
+        'LEFT_SIDEBAR'  => ['price' => 200000, 'limit' => 3, 'days' => 7],
+        'RIGHT_SIDEBAR' => ['price' => 200000, 'limit' => 3, 'days' => 7],
+        'STD'           => ['price' => 50000,  'limit' => 7, 'days' => 7]
     ];
 
     public function __construct($db) {

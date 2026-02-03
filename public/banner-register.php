@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>git
+<head>
     <meta charset="UTF-8">
     <title>Thuê Quảng Cáo | MuMoiRa.mobi Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

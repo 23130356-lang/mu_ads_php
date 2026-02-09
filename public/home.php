@@ -2,14 +2,6 @@
 // File này chỉ chứa View, dữ liệu đã được HomeController chuẩn bị sẵn.
 // Các biến có sẵn: $superVips, $vips, $normals, $bannersHero, $bannersLeft, v.v.
 
-// Hàm hỗ trợ lấy banner an toàn (chỉ cho View)
-if (!function_exists('getBanner')) {
-    function getBanner($list, $index) {
-        return isset($list[$index]) ? $list[$index] : null;
-    }
-}
-?>
-<?php
 // --- Xử lý Logic Ngày Tháng (Tương đương đoạn đầu của JSP) ---
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $todayStr     = date('d/m/Y');
@@ -21,9 +13,11 @@ $pageTitle = $pageTitle ?? 'Mu Mới Ra | Mumoira Portal';
 $metaDescription = $metaDescription ?? 'Cổng game Mu Online, Mu Mobile mới ra mắt.';
 $canonicalUrl = $canonicalUrl ?? '';
 
-// Hàm hỗ trợ kiểm tra mảng banner (an toàn)
-function getBanner($list, $index) {
-    return isset($list[$index]) ? $list[$index] : null;
+// Hàm hỗ trợ kiểm tra mảng banner (an toàn) - Đã xóa bản sao thừa ở đầu file
+if (!function_exists('getBanner')) {
+    function getBanner($list, $index) {
+        return isset($list[$index]) ? $list[$index] : null;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -44,7 +38,8 @@ function getBanner($list, $index) {
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?= !empty($canonicalUrl) ? $canonicalUrl : 'https://mumoira.mobile/' ?>" />
     <meta property="og:image" content="https://mumoira.mobile/images/thumbnail-share.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport" content="width=1370, user-scalable=yes">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -64,21 +59,53 @@ function getBanner($list, $index) {
 
         body {
             background-color: var(--mu-bg);
+            /* Background căn giữa và cố định đẹp mắt */
             background-image: radial-gradient(circle at 50% 0%, #1a0505 0%, #000000 80%);
             background-attachment: fixed;
+            background-position: center top;
+            background-size: cover;
+            
             font-family: 'Rajdhani', sans-serif;
             color: var(--mu-text);
-            min-width: 1400px;
-            overflow-x: auto;
             margin: 0;
+            padding: 0;
+            /* Đảm bảo không có thanh cuộn ngang dư thừa */
+            overflow-x: hidden; 
         }
 
         a { text-decoration: none; transition: 0.3s; }
 
-        /* Layout */
-        .main-wrapper { display: flex; justify-content: center; gap: 15px; padding: 15px; max-width: 1900px; margin: 0 auto; }
-        .sidebar { width: 280px; min-width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; }
-        .content-area { flex-grow: 1; max-width: 750px; }
+        /* --- LAYOUT CHÍNH (Đã tối ưu kích thước cố định) --- */
+        /* Tổng chiều rộng: 280(Left) + 15(Gap) + 750(Content) + 15(Gap) + 280(Right) + 30(Padding) = 1370px */
+        
+        .main-wrapper { 
+            display: flex; 
+            justify-content: center; /* Tự động căn giữa */
+            gap: 15px; 
+            padding: 15px; 
+            
+            /* Kích thước cố định để khớp với viewport mobile */
+            width: 1370px; 
+            max-width: 1370px;
+            margin: 0 auto; /* Căn giữa màn hình PC to */
+            box-sizing: border-box;
+        }
+
+        .sidebar { 
+            width: 280px; 
+            min-width: 280px; 
+            flex-shrink: 0; /* Không cho phép co lại */
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+
+        .content-area { 
+            width: 750px;
+            min-width: 750px;
+            flex-grow: 0; /* Không tự giãn, giữ cố định pixel */
+            flex-shrink: 0;
+        }
 
         /* Banners */
         .mu-item-frame {
@@ -121,41 +148,19 @@ function getBanner($list, $index) {
         .hdr-item { flex: 1; }
 
         /* Row Styles */
-.srv-row-inner {
-    display: flex;
-    align-items: center;
-    padding: 6px 0; /* giảm 50% chiều cao */
-}
-.col-left-identity {
-    width: 30%;
-    padding-left: 12px;
-    padding-right: 8px;
-    line-height: 1.2; /* giảm độ giãn dòng */
-}
+        .srv-row-inner { display: flex; align-items: center; padding: 6px 0; }
+        .col-left-identity { width: 30%; padding-left: 12px; padding-right: 8px; line-height: 1.2; }
         .col-right-wrapper { width: 70%; display: flex; flex-direction: column; padding: 0 15px; justify-content: center; gap: 8px; }
         .stats-line { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: center; }
         .stat-box { flex: 1; font-size: 0.9rem; }
         .banner-line { width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 5px; }
-.inner-banner-img {
-    width: 95%;
-    height: 50px; /* thấp hơn cho gọn */
-    object-fit: fill;
-}
-
+        .inner-banner-img { width: 95%; height: 50px; object-fit: fill; }
 
         /* SVIP Wrapper */
         .svip-wrapper { position: relative; margin-bottom: 14px; border-radius: 6px; padding: 4px; overflow: hidden; animation: pulseRed 1s infinite alternate; background: #000; }
         .svip-wrapper::before, .svip-wrapper::after { content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 1000%; background: conic-gradient(transparent 0deg, transparent 140deg, #da0000 160deg, #ff7300 170deg, #ffff00 175deg, #ffffff 180deg, #ffff00 185deg, #ff7300 190deg, #da0000 200deg, transparent 220deg); transform: translate(-50%, -50%); animation: spinBorder 2.5s linear infinite; z-index: 1; }
         .svip-wrapper::after { animation-delay: -1.25s; }
-.svip-content {
-    position: relative;
-    z-index: 2;
-    background: linear-gradient(90deg, #250000 0%, #150000 100%);
-    border-radius: 4px;
-    width: 100%;
-    height: auto;          /* QUAN TRỌNG: bỏ height 100% */
-    padding: 6px 10px;     /* thêm đệm nhỏ bên trong cho gọn */
-}
+        .svip-content { position: relative; z-index: 2; background: linear-gradient(90deg, #250000 0%, #150000 100%); border-radius: 4px; width: 100%; height: auto; padding: 6px 10px; }
         .name-super-vip { color: rgb(212 253 13); font-size: 1.25rem; font-weight: 700; text-shadow: 0 0 10px #f7ff00; font-family: 'Cinzel', serif; }
         .btn-view-svip { background: linear-gradient(180deg, #cc0000 0%, #660000 100%); border: 1px solid #ff3333; color: #fff; padding: 4px 15px; font-size: 0.75rem; }
         .btn-view-svip:hover { box-shadow: 0 0 15px red; color: #fff; transform: scale(1.05); }
@@ -203,8 +208,7 @@ function getBanner($list, $index) {
 </head>
 <body>
   <?php include 'includes/header.php'; ?>
-
-<?php if(file_exists('header.php')) include 'header.php'; ?>
+  <?php if(file_exists('header.php')) include 'header.php'; ?>
 
 <div class="main-wrapper">
 

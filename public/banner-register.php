@@ -162,7 +162,7 @@
                     </div>
 
                     <div class="w-100 mt-4 px-2">
-                        <a href="https://zalo.me/SDT_CUA_BAN" target="_blank" class="btn btn-outline-warning w-100 py-2 fw-bold" style="border: 1px solid var(--mu-gold); color: var(--mu-gold);">
+                        <a href="https://zalo.me/0372229527" target="_blank" class="btn btn-outline-warning w-100 py-2 fw-bold" style="border: 1px solid var(--mu-gold); color: var(--mu-gold);">
                             <i class="fa-solid fa-comments me-2"></i> LIÊN HỆ ADMIN
                         </a>
                         <div class="text-center mt-2">
@@ -206,7 +206,7 @@
                         </div>
 
                         <div class="w-75 mx-auto mt-3">
-                            <a href="https://zalo.me/0372229527_blank" class="btn btn-mu-action w-100 py-3 fs-5">
+                            <a href="https://zalo.me/0372229527" class="btn btn-mu-action w-100 py-3 fs-5">
                                 <i class="fa-solid fa-phone-volume me-2"></i> LIÊN HỆ ĐẶT VIP
                             </a>
                             <div class="text-center mt-2">
@@ -308,7 +308,7 @@
                     </div>
 
                     <div class="w-100 mt-4 px-2">
-                        <a href="https://zalo.me/SDT_CUA_BAN" target="_blank" class="btn btn-outline-warning w-100 py-2 fw-bold" style="border: 1px solid var(--mu-gold); color: var(--mu-gold);">
+                        <a href="https://zalo.me/0372229527" target="_blank" class="btn btn-outline-warning w-100 py-2 fw-bold" style="border: 1px solid var(--mu-gold); color: var(--mu-gold);">
                             <i class="fa-solid fa-comments me-2"></i> LIÊN HỆ ADMIN
                         </a>
                         <div class="text-center mt-2">

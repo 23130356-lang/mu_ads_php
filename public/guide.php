@@ -359,7 +359,7 @@
                         </div>
                         <div class="col-md-5 text-center mt-3 mt-md-0">
                             <div style="background: white; padding: 10px; display: inline-block; border-radius: 4px;">
-                                <img src="uploads/qr.png" 
+                                <img src="./uploads/image.png" 
                                      alt="QR Code"
                                      width="180">
                             </div>

@@ -496,19 +496,19 @@
                                     <tr>
                                         <td class="fw-bold text-light">Banner Giữa (Nhỏ)</td>
                                         <td>1200 x 120 <small class="text-secondary">(hoặc 780x110)</small></td>
-                                        <td>08</td>
+                                        <td>07</td>
                                         <td>Ảnh động, HTML5</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-bold text-light">Banner Trái</td>
                                         <td>280 x 500 <small class="text-secondary">(hoặc 210x400)</small></td>
-                                        <td>06</td>
+                                        <td>03</td>
                                         <td>Ảnh động, HTML5</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-bold text-light">Banner Phải</td>
                                         <td>280 x 500 <small class="text-secondary">(hoặc 210x400)</small></td>
-                                        <td>06</td>
+                                        <td>03</td>
                                         <td>Ảnh động, HTML5</td>
                                     </tr>
                                     </tbody>

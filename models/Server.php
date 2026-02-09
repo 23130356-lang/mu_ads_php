@@ -3,7 +3,7 @@ class Server {
     private $conn;
     private $table_name = "servers";
 
- 
+    // Cấu hình các gói dịch vụ (Dùng để tính tiền mà không cần bảng packages trong DB)
     public $packages = [
         'BASIC'     => ['price' => 0,   'days' => 7,  'label' => 'BASIC'],
         'VIP'       => ['price' => 100, 'days' => 10, 'label' => 'VIP'],
@@ -15,7 +15,7 @@ class Server {
     }
 
     // =================================================================
-    // PHẦN 1: QUẢN LÝ SERVER CÁ NHÂN (MỚI BỔ SUNG)
+    // PHẦN 1: QUẢN LÝ SERVER CÁ NHÂN
     // =================================================================
 
     /**
@@ -41,7 +41,7 @@ class Server {
         try {
             $this->conn->beginTransaction();
 
-            // 1. Lấy thông tin Server hiện tại (để biết gói cước và ngày hết hạn cũ)
+            // 1. Lấy thông tin Server hiện tại
             $stmt = $this->conn->prepare("SELECT server_name, banner_package, expired_at, status FROM " . $this->table_name . " WHERE server_id = :sid AND user_id = :uid");
             $stmt->execute([':sid' => $serverId, ':uid' => $userId]);
             $server = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -53,18 +53,13 @@ class Server {
             // 2. Lấy thông tin giá và ngày từ cấu hình $packages
             $packKey = $server['banner_package'];
             if (!isset($this->packages[$packKey])) {
-                throw new Exception("Gói cước hiện tại của server không hợp lệ để gia hạn.");
+                // Nếu gói cũ không tìm thấy, gán về gói BASIC mặc định để tránh lỗi
+                $packKey = 'BASIC';
             }
             
             $packInfo = $this->packages[$packKey];
             $cost = $packInfo['price'];
             $daysToAdd = $packInfo['days'];
-
-            // Nếu là gói miễn phí (BASIC) có thể chặn gia hạn hoặc cho phép tùy chính sách
-            if ($cost <= 0) {
-                 // Ví dụ: Không cho gia hạn gói miễn phí, bắt phải đăng ký lại hoặc nâng cấp (tùy bạn)
-                 // Ở đây tôi cho phép gia hạn miễn phí để test
-            }
 
             // 3. Kiểm tra và Trừ tiền User
             // Sử dụng FOR UPDATE để khóa row tránh race condition
@@ -77,11 +72,12 @@ class Server {
             }
 
             // Trừ tiền
-            $this->conn->prepare("UPDATE users SET coin = coin - :cost WHERE user_id = :uid")
-                       ->execute([':cost' => $cost, ':uid' => $userId]);
+            if ($cost > 0) {
+                $this->conn->prepare("UPDATE users SET coin = coin - :cost WHERE user_id = :uid")
+                            ->execute([':cost' => $cost, ':uid' => $userId]);
+            }
 
             // 4. Tính ngày hết hạn mới
-            // Logic: Nếu còn hạn -> Cộng tiếp vào ngày cũ. Nếu đã hết hạn -> Tính từ thời điểm hiện tại.
             $currentExpire = $server['expired_at'];
             $now = date('Y-m-d H:i:s');
 
@@ -94,7 +90,6 @@ class Server {
             $newExpire = date('Y-m-d H:i:s', strtotime($baseDate . " + $daysToAdd days"));
 
             // 5. Cập nhật Server
-            // Nếu server đang EXPIRED hoặc REJECTED, chuyển về APPROVED (trừ PENDING chờ duyệt lần đầu)
             $newStatus = ($server['status'] == 'PENDING') ? 'PENDING' : 'APPROVED'; 
 
             $updateSql = "UPDATE " . $this->table_name . " 
@@ -119,7 +114,7 @@ class Server {
     }
 
     // =================================================================
-    // PHẦN 2: CLIENT VIEW (GIỮ NGUYÊN)
+    // PHẦN 2: CLIENT VIEW
     // =================================================================
 
     public function getHomeServers($filterType = 'open', $versionId = null, $resetId = null) {
@@ -375,20 +370,37 @@ class Server {
             return false;
         }
     }
+
+    // =================================================================
+    // ĐÃ FIX LỖI Ở HÀM NÀY (SERVER BY ID)
+    // =================================================================
     public function getServerById($id) {
-    $query = "SELECT s.*, p.price as package_price 
-              FROM servers s 
-              LEFT JOIN packages p ON s.package_id = p.id 
-              WHERE s.id = :id LIMIT 1";
-              
-    // *Lưu ý: Nếu bảng servers của bạn đã lưu sẵn cột 'package_price' thì không cần JOIN bảng packages.
-    // Nếu bảng servers lưu giá, câu query đơn giản là: 
-    // "SELECT * FROM servers WHERE id = :id LIMIT 1"
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':id', $id);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+        // 1. Chỉ lấy từ bảng servers và users, KHÔNG JOIN packages
+        $query = "SELECT s.*, u.username, u.email 
+                  FROM " . $this->table_name . " s
+                  LEFT JOIN users u ON s.user_id = u.user_id
+                  WHERE s.server_id = :id LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($row) {
+                // 2. TỰ ĐỘNG LẤY GIÁ TỪ ARRAY $packages CỦA PHP
+                $packKey = $row['banner_package'] ?? 'BASIC';
+                $packInfo = $this->packages[$packKey] ?? $this->packages['BASIC'];
+
+                // Gán thêm thông tin giá vào kết quả trả về
+                $row['package_price'] = $packInfo['price'];
+                $row['package_days']  = $packInfo['days'];
+                $row['package_label'] = $packInfo['label'];
+                
+                return $row;
+            }
+        }
+        return false;
+    }
 }
 ?>

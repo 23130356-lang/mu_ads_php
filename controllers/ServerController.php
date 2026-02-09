@@ -16,130 +16,44 @@ class ServerController {
     }
 
     // =================================================================
-    // PHẦN 1: QUẢN LÝ USER (MỚI BỔ SUNG)
+    // 1. HIỂN THỊ CHI TIẾT (QUAN TRỌNG NHẤT CHO YÊU CẦU CỦA BẠN)
     // =================================================================
-
     
-public function manage() {
-    // 1. Kiểm tra đăng nhập
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: index.php?url=login&error=" . urlencode("Vui lòng đăng nhập!"));
-        exit;
-    }
-
-    // 2. Lấy danh sách server từ Model
-    $rawServers = $this->serverModel->getServersByUserId($_SESSION['user_id']);
-
-    $servers = [];
-    foreach ($rawServers as $sv) {
-        $packageKey = $sv['banner_package']; // Ví dụ: 'VIP', 'BASIC'
-        
-        // Lấy cấu hình từ Model (File Server.php)
-        // Nếu không tìm thấy gói thì lấy mặc định là 0 đồng, 7 ngày
-        $packConfig = $this->serverModel->packages[$packageKey] ?? [
-            'price' => 0, 
-            'days'  => 7, 
-            'label' => $packageKey
-        ];
-
-        // ========================================================
-        // [QUAN TRỌNG] BỔ SUNG CÁC TRƯỜNG CHO VIEW SỬ DỤNG
-        // ========================================================
-        
-        // 1. Label hiển thị (VD: VIP, BASIC)
-        $sv['package_label'] = $packConfig['label']; 
-        
-        // 2. Giá tiền (để echo $sv['package_price'])
-        $sv['package_price'] = $packConfig['price']; 
-        
-        // 3. Số ngày (để echo $sv['package_days'])
-        $sv['package_days']  = $packConfig['days'];
-
-        // 4. Object dùng cho JavaScript (Popup gia hạn)
-        $sv['bannerPackage'] = [
-            'label' => $packConfig['label'],
-            'price' => $packConfig['price'],
-            'durationDays' => $packConfig['days']
-        ];
-
-        // Xử lý ảnh banner
-        if (empty($sv['banner_image'])) {
-            $sv['banner_image'] = 'assets/images/no-image.jpg';
-        }
-
-        $servers[] = $sv;
-    }
-
-    // Gọi View
-    require_once '../public/manage_servers.php'; 
-}
-
     /**
-     * Xử lý hành động Gia hạn (Action)
+     * Hiển thị chi tiết server
+     * @param int $urlId ID nhận từ Router (nếu có)
      */
-    public function renew() {
-    // 1. Kiểm tra đăng nhập
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: index.php?url=login");
-        exit;
-    }
+    public function detail($urlId = 0) {
+        // Ưu tiên lấy ID từ tham số truyền vào (Router SEO), nếu không có thì lấy $_GET
+        $id = ($urlId > 0) ? $urlId : ($_GET['id'] ?? 0);
 
-    $serverId = $_GET['id'] ?? 0;
-    $userId = $_SESSION['user_id'];
-  
-    $server = $this->serverModel->getServerById($serverId);
-
-    if (!$server || $server['user_id'] != $userId) {
-        header("Location: index.php?url=manage-server&status=error&message=" . urlencode("Máy chủ không tồn tại hoặc không thuộc quyền quản lý của bạn!"));
-        exit;
-    }
-
-    if ($server['package_price'] <= 0) {
-        header("Location: index.php?url=manage-server&status=error&message=" . urlencode("Gói miễn phí không thể gia hạn (chống Spam)!"));
-        exit;
-    }
-
-
-    $result = $this->serverModel->renew($serverId, $userId);
-
-    if ($result === true) {
-        header("Location: index.php?url=manage-server&status=success&message=" . urlencode("Gia hạn thành công!"));
-    } else {
-        header("Location: index.php?url=manage-server&status=error&message=" . urlencode($result));
-    }
-    exit;
-}
-
-    
-    public function detail() {
-        // 1. Lấy ID từ URL
-        $id = $_GET['id'] ?? 0;
         if ($id <= 0) {
-            header("Location: index.php");
+            header("Location: /");
             exit;
         }
 
-        // 2. Lấy dữ liệu đầy đủ từ Database thông qua Model
-        // Đảm bảo getDetailFull đã JOIN với các bảng versions, server_types, reset_types
+        // Lấy dữ liệu đầy đủ từ Model
         $rawData = $this->serverModel->getDetailFull($id);
         
         if (!$rawData) {
-            // Nếu không tìm thấy server, trả về 404 hoặc về trang chủ
-            header("HTTP/1.0 404 Not Found");
-            die("Máy chủ không tồn tại hoặc đã hết hạn.");
+            // Không tìm thấy server
+            require_once '../public/includes/header.php';
+            echo '<div class="container pt-5 text-center text-white"><h3>Máy chủ không tồn tại hoặc đã bị xóa.</h3><a href="/" class="btn btn-secondary mt-3">Quay lại</a></div>';
+            require_once '../public/includes/footer.php';
+            exit;
         }
 
-        // 3. XỬ LÝ SEO (PHẦN QUAN TRỌNG NHẤT)
-        // Nhúng class SeoHelper
-        require_once '../models/SeoHelper.php';
-        
-        // Tạo đối tượng SEO từ dữ liệu thô trong DB
-        $seoData = SeoHelper::generateMeta($rawData);
-        
-        // Đưa vào biến Global để file header.php có thể truy cập được
-        $GLOBALS['seo'] = $seoData;
+        // --- XỬ LÝ SEO ---
+        // (Giả sử bạn có class SeoHelper, nếu không có thể bỏ qua đoạn này)
+        if (class_exists('SeoHelper')) {
+            $seoData = SeoHelper::generateMeta($rawData);
+            $GLOBALS['seo'] = $seoData; 
+        }
 
-        // 4. ĐỔ DỮ LIỆU VÀO VIEWMODEL (Giữ nguyên cấu trúc của bạn nhưng làm sạch dữ liệu)
+        // --- CHUẨN BỊ DỮ LIỆU CHO VIEW ---
+        // View yêu cầu cấu trúc nested object ($server->stats->expRate)
+        // Nên ta dùng các ViewModel Class ở cuối file để định hình dữ liệu
+        
         $server = new ServerViewModel();
         $server->id             = $rawData['server_id'];
         $server->serverName     = htmlspecialchars($rawData['server_name']);
@@ -147,44 +61,108 @@ public function manage() {
         $server->slogan         = htmlspecialchars($rawData['slogan']);
         $server->bannerPackage  = $rawData['banner_package'];
         
-        // Xử lý ảnh Banner (Ưu tiên ảnh upload, nếu không có dùng ảnh mặc định)
+        // Xử lý link ảnh banner
         if (!empty($rawData['banner_image'])) {
-            // Nếu là link URL từ web khác thì giữ nguyên, nếu là file thì nối đường dẫn
             $server->bannerImage = (filter_var($rawData['banner_image'], FILTER_VALIDATE_URL)) 
                                     ? $rawData['banner_image'] 
                                     : 'uploads/' . basename($rawData['banner_image']);
         } else {
-            $server->bannerImage = 'assets/images/no-image.jpg';
+            $server->bannerImage = 'assets/images/no-image.jpg'; // Ảnh mặc định
         }
 
         $server->websiteUrl     = $rawData['website_url'];
         $server->fanpageUrl     = $rawData['fanpage_url'];
-        $server->description    = $rawData['description']; // Giữ nguyên HTML nếu dùng trình soạn thảo
-        $server->serverTypeName = $rawData['type_name'] ?? 'Normal'; // Lấy từ bảng server_types
+        $server->description    = $rawData['description']; // HTML content
+        $server->serverTypeName = $rawData['type_name'] ?? 'Normal';
 
-        // 5. CHI TIẾT THÔNG SỐ (STATS)
+        // Object con: Thống kê (Stats)
         $server->stats = new ServerStatsViewModel();
-        $server->stats->muVersionName = $rawData['version_name'] ?? 'Chưa xác định';
+        $server->stats->muVersionName = $rawData['version_name'] ?? 'Unknown';
         $server->stats->expRate       = number_format($rawData['exp_rate']) . 'x';
-        $server->stats->dropRate      = $rawData['drop_rate'] . '%';
+        $server->stats->dropRate      = $rawData['drop_rate'];
         $server->stats->antiHack      = htmlspecialchars($rawData['anti_hack'] ?? 'N/A');
-        $server->stats->resetTypeName = $rawData['reset_name'] ?? 'No Reset';
-        $server->stats->pointTypeName = $rawData['point_name'] ?? 'Cơ bản';
+        $server->stats->resetTypeName = $rawData['reset_name'] ?? 'Reset';
+        $server->stats->pointTypeName = $rawData['point_name'] ?? '5/7';
 
-        // 6. LỊCH TRÌNH (SCHEDULE)
+        // Object con: Lịch trình (Schedule)
         $server->schedule = new ServerScheduleViewModel();
-        $server->schedule->alphaDate = !empty($rawData['alpha_date']) ? date('d/m/Y', strtotime($rawData['alpha_date'])) : '---';
-        $server->schedule->alphaTime = !empty($rawData['alpha_time']) ? date('H:i', strtotime($rawData['alpha_time'])) : '';
-        $server->schedule->betaDate  = !empty($rawData['beta_date']) ? date('d/m/Y', strtotime($rawData['beta_date'])) : '---';
-        $server->schedule->betaTime  = !empty($rawData['beta_time']) ? date('H:i', strtotime($rawData['beta_time'])) : '';
+        $server->schedule->alphaDate = $rawData['alpha_date']; // View sẽ tự format date()
+        $server->schedule->alphaTime = $rawData['alpha_time'];
+        $server->schedule->betaDate  = $rawData['beta_date'];
+        $server->schedule->betaTime  = $rawData['beta_time'];
 
-        // 7. GỌI VIEW HIỂN THỊ
+        // --- GỌI VIEW ---
+        // $server sẽ được dùng bên trong file view này
         require_once '../public/server_detail.php';
+    }
+
+    // =================================================================
+    // 2. CÁC CHỨC NĂNG QUẢN LÝ (MANAGE, STORE, RENEW)
+    // =================================================================
+
+    public function manage() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login?error=" . urlencode("Vui lòng đăng nhập!"));
+            exit;
+        }
+
+        $rawServers = $this->serverModel->getServersByUserId($_SESSION['user_id']);
+        $servers = [];
+
+        foreach ($rawServers as $sv) {
+            $packageKey = $sv['banner_package'];
+            $packConfig = $this->serverModel->packages[$packageKey] ?? ['price'=>0, 'days'=>7, 'label'=>$packageKey];
+
+            $sv['package_label'] = $packConfig['label']; 
+            $sv['package_price'] = $packConfig['price']; 
+            $sv['package_days']  = $packConfig['days'];
+
+            $sv['bannerPackage'] = [
+                'label' => $packConfig['label'],
+                'price' => $packConfig['price'],
+                'durationDays' => $packConfig['days']
+            ];
+
+            if (empty($sv['banner_image'])) {
+                $sv['banner_image'] = 'assets/images/no-image.jpg';
+            }
+            $servers[] = $sv;
+        }
+
+        require_once '../public/manage_servers.php'; 
+    }
+
+    public function renew() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login");
+            exit;
+        }
+
+        $serverId = $_GET['id'] ?? 0;
+        $userId = $_SESSION['user_id'];
+        $server = $this->serverModel->getServerById($serverId);
+
+        if (!$server || $server['user_id'] != $userId) {
+            header("Location: manage-server?status=error&message=" . urlencode("Lỗi quyền truy cập!"));
+            exit;
+        }
+
+        if ($server['package_price'] <= 0) {
+            header("Location: manage-server?status=error&message=" . urlencode("Gói miễn phí không cần gia hạn!"));
+            exit;
+        }
+
+        $result = $this->serverModel->renew($serverId, $userId);
+        $status = ($result === true) ? 'success' : 'error';
+        $msg    = ($result === true) ? 'Gia hạn thành công!' : $result;
+
+        header("Location: manage-server?status=$status&message=" . urlencode($msg));
+        exit;
     }
 
     public function store() {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?url=login&error=" . urlencode("Bạn phải đăng nhập!"));
+            header("Location: login");
             exit;
         }
 
@@ -214,39 +192,37 @@ public function manage() {
         ];
 
         $result = $this->serverModel->createFull($data);
-        header("Location: index.php?url=create-server&status=" . ($result ? "success" : "error"));
+        header("Location: create-server?status=" . ($result ? "success" : "error"));
         exit;
     }
 
     private function handleBannerUpload() {
         $uploadType = $_POST['uploadType'] ?? 'file';
-        $bannerString = '';
+        if ($uploadType !== 'file') {
+            $url = trim($_POST['banner_url'] ?? '');
+            return (filter_var($url, FILTER_VALIDATE_URL)) ? $url : '';
+        }
 
-        if ($uploadType === 'file') {
-            if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
-                $targetDir = "uploads/"; // Lưu ý đường dẫn tương đối
-                if (!file_exists("../public/" . $targetDir)) mkdir("../public/" . $targetDir, 0777, true);
+        if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
+            $targetDir = "uploads/";
+            if (!file_exists("../public/" . $targetDir)) mkdir("../public/" . $targetDir, 0777, true);
 
-                $fileName = $_FILES['banner_file']['name'];
-                $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                $allowTypes = ['jpg','jpeg','png','gif','webp'];
-
-                if (in_array($fileType, $allowTypes) && $_FILES['banner_file']['size'] <= 5 * 1024 * 1024) {
-                    $newFileName = time() . '_' . rand(1000,9999) . '.' . $fileType;
-                    if (move_uploaded_file($_FILES['banner_file']['tmp_name'], "../public/" . $targetDir . $newFileName)) {
-                        $bannerString = $targetDir . $newFileName;
-                    }
+            $fileName = $_FILES['banner_file']['name'];
+            $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            if (in_array($fileType, ['jpg','jpeg','png','gif','webp']) && $_FILES['banner_file']['size'] <= 5242880) {
+                $newFileName = time() . '_' . rand(1000,9999) . '.' . $fileType;
+                if (move_uploaded_file($_FILES['banner_file']['tmp_name'], "../public/" . $targetDir . $newFileName)) {
+                    return $targetDir . $newFileName;
                 }
             }
-        } else {
-            $url = trim($_POST['banner_url'] ?? '');
-            if (!empty($url) && filter_var($url, FILTER_VALIDATE_URL)) {
-                $bannerString = $url;
-            }
         }
-        return $bannerString;
+        return '';
     }
 }
+
+// =================================================================
+// 3. VIEW MODELS (Cấu trúc dữ liệu để View sử dụng)
+// =================================================================
 
 class ServerViewModel {
     public $id;
@@ -259,8 +235,8 @@ class ServerViewModel {
     public $fanpageUrl;
     public $description;
     public $serverTypeName;
-    public $stats;    
-    public $schedule; 
+    public $stats;    // Chứa instance của ServerStatsViewModel
+    public $schedule; // Chứa instance của ServerScheduleViewModel
 }
 
 class ServerStatsViewModel {

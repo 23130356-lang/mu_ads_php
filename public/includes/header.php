@@ -84,11 +84,116 @@ if (!function_exists('createSlug')) {
     #muxua-unique-header ul { list-style: none; }
     #muxua-unique-header .mh-container { max-width: 1320px; margin: 0 auto; padding: 0 15px; height: 70px; display: flex; align-items: center; justify-content: space-between; position: relative; }
     #muxua-unique-header .mh-logo-link { display: flex; flex-direction: column; justify-content: center; line-height: 1; margin-right: 40px; }
-    #muxua-unique-header .mh-brand-main { font-family: 'Metal Mania', cursive; font-weight: 400; font-size: 36px; letter-spacing: 3px; text-transform: uppercase; display: flex; align-items: center; transform: skewX(-10deg); filter: drop-shadow(2px 2px 0px #000); }
-    .metal-text { background-clip: text; -webkit-background-clip: text; color: transparent; background-size: 200% auto; animation: shineMetal 3s infinite linear; -webkit-text-stroke: 0.5px rgba(0,0,0,0.3); }
-    #muxua-unique-header .mh-brand-gold { margin-right: 5px; background-image: linear-gradient(180deg, #ffeb3b 0%, #d4af37 40%, #ffffff 50%, #8a5d18 51%, #634211 100%); }
-    #muxua-unique-header .mh-brand-platinum { background-image: linear-gradient(180deg, #e6f0ff 0%, #aaccff 40%, #ffffff 50%, #7392ae 51%, #8db2d6 100%); }
-    #muxua-unique-header .mh-brand-desc { font-size: 10px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Rajdhani:wght@600;700&display=swap');
+    #muxua-unique-header .mh-brand-main {
+        font-family: 'Cinzel', serif;
+        font-weight: 900;
+        font-size: 28px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        
+        /* Nghiêng nhẹ tạo dáng khí động học */
+        transform: skewX(-12deg); 
+        
+        /* Đổ bóng ĐEN tạo khối dày dặn (Gai góc) */
+        filter: drop-shadow(0 4px 0px #000000); 
+    }
+
+    /* Class chung */
+    .metal-text {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent; 
+        
+        /* Viền chữ mảnh để giữ nét sắc cạnh */
+        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.15);
+        
+        position: relative;
+        /* Kích thước nền lớn để hiệu ứng trôi mượt hơn */
+        background-size: 200% auto;
+        
+        /* QUAN TRỌNG: 
+           - 4s: Tốc độ trôi (càng tăng số càng chậm).
+           - linear: Chạy đều đặn không nhanh không chậm.
+           - infinite: Lặp lại mãi mãi.
+        */
+        animation: shineFlow 4s infinite linear;
+    }
+
+    /* 1. MUMOIRA - VÀNG TRẦM (Antique Gold) */
+    #muxua-unique-header .mh-brand-gold {
+        margin-right: 8px;
+        /* Gradient được thiết kế để lặp lại mượt mà (Đầu và Cuối giống nhau) */
+        background-image: linear-gradient(
+            110deg, 
+            #8a6e2f 0%,    /* Tối */
+            #cfb53b 25%,   /* Sáng vừa */
+            #ffffff 50%,   /* Sáng nhất (Tâm điểm) */
+            #cfb53b 75%,   /* Sáng vừa */
+            #8a6e2f 100%   /* Tối (Trùng với 0% để loop không bị giật) */
+        );
+        /* Hào quang vàng nhẹ */
+        filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3));
+    }
+
+    /* 2. .MOBI - BẠC TITAN (Titanium Silver) */
+    #muxua-unique-header .mh-brand-platinum {
+        background-image: linear-gradient(
+            110deg, 
+            #4a5568 0%,    /* Tối */
+            #a0aec0 25%,   /* Sáng vừa */
+            #ffffff 50%,   /* Sáng nhất */
+            #a0aec0 75%,   /* Sáng vừa */
+            #4a5568 100%   /* Tối */
+        );
+        /* Hào quang trắng nhẹ */
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+    }
+
+    /* --- ANIMATION: TRÔI LIÊN TỤC --- */
+    @keyframes shineFlow {
+        0% {
+            background-position: 0% center;
+        }
+        100% {
+            /* Di chuyển background sang trái 200% để tạo hiệu ứng trôi */
+            background-position: -200% center;
+        }
+    }
+
+    /* Đường kẻ chân tinh tế */
+    #muxua-unique-header .mh-brand-main::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 5%;
+        width: 90%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #b8860b, #718096, transparent);
+        opacity: 0.5;
+    }
+
+    /* Hover effect */
+    #muxua-unique-header .mh-brand-main:hover {
+        cursor: pointer;
+        transform: skewX(-12deg) scale(1.02);
+        transition: 0.3s;
+    }
+
+    /* Slogan */
+    #muxua-unique-header .mh-brand-desc {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 11px;
+        color: #777;
+        letter-spacing: 4px; 
+        text-transform: uppercase;
+        margin-top: 4px;
+        text-align: center;
+        text-shadow: 0 1px 1px #000;
+    }
     #muxua-unique-header .mh-nav { flex-grow: 1; height: 100%; display: flex; align-items: center; }
     #muxua-unique-header .mh-menu-list { display: flex; gap: 5px; height: 100%; }
     #muxua-unique-header .mh-menu-item { position: relative; height: 100%; display: flex; align-items: center; }

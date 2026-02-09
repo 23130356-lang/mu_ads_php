@@ -1,14 +1,16 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
+    # Thay đổi dòng này đúng với đường dẫn thực tế trên host/localhost của bạn
     RewriteBase /mu-ads-platform/public/
 
+    # Chặn truy cập trực tiếp vào các thư mục hệ thống
     RewriteRule ^(includes|models|views|controllers|config)/ - [F,L]
 
-    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.php\ HTTP/
-    RewriteRule ^(.*)index\.php$ /$1 [R=301,L]
-
+    # Nếu truy cập file/thư mục có thật thì không rewrite (để load ảnh, css, js)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Tất cả request còn lại chuyển về index.php
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 </IfModule>

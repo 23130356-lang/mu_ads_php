@@ -149,8 +149,11 @@ class Server {
     }
 
     public function getDetailFull($id) {
-        $sql = "SELECT s.*, v.version_name, t.type_name as server_type_name, 
-                       r.reset_name, p.point_name,
+        $sql = "SELECT s.*, 
+                       v.version_name, 
+                       t.type_name as server_type_name, 
+                       r.reset_name as reset_type_name, 
+                       p.point_name as point_type_name,
                        st.exp_rate, st.drop_rate, st.anti_hack, st.point_id,
                        sch.alpha_date, sch.alpha_time, sch.beta_date, sch.beta_time
                 FROM " . $this->table_name . " s

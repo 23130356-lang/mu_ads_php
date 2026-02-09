@@ -23,6 +23,7 @@ if (!function_exists('getBanner')) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<meta name="google-site-verification" content="fuLs-_Q_mKWzIRWRvQRwRYX_e3GgN4-ACp14YnEu7eM" />
     <meta charset="UTF-8">
     <title><?= $pageTitle ?></title>
     <meta name="description" content="<?= $metaDescription ?>">
@@ -371,26 +372,34 @@ if (!function_exists('getBanner')) {
                                     </div>
                                 </div>
 
-                                <div class="col-right-wrapper">
-                                    <div class="stats-line">
-                                        <div class="stat-box"><span class="badge-ver text-warning"><?= $sv['version_name'] ?></span></div>
-                                        <div class="stat-box text-light fw-bold"><?= $sv['reset_name'] ?></div>
+                               <div class="col-right-wrapper">
+                                <div class="stats-line">
+                                    <div class="stat-box">
+                                        <span class="badge-ver text-warning"><?= $sv['version_name'] ?></span>
+                                    </div>
+                                    
+                                    <div class="stat-box text-light fw-bold"><?= $sv['reset_name'] ?></div>
 
-                                        <div class="stat-box text-danger fw-bold" style="font-size: 1rem;">
-                                            <?= $svDate ?>
-                                        </div>
+                                    <div class="stat-box text-danger fw-bold" style="font-size: 1rem;">
+                                        <?= $svDate ?>
+                                    </div>
 
-                                        <div class="stat-box">
-                                            <a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view btn-view-svip">XEM NGAY</a>
-                                        </div>                                    </div>
-                                    <div class="banner-line">
-                                        <?php if (!empty($sv['image_url'])): ?>
-                                            <img src="<?= $sv['image_url'] ?>" class="inner-banner-img" alt="<?= $sv['server_name'] ?>">
-                                        <?php else: ?>
-                                            <img src="https://via.placeholder.com/600x60/550000/FFFFFF?text=MU+ONLINE+VIP" class="inner-banner-img">
-                                        <?php endif; ?>
+                                    <div class="stat-box">
+                                    <a href="<?= !empty($sv['slug']) ? $sv['slug'] : 'server' ?>-s<?= $sv['server_id'] ?>" 
+                                        class="btn-view btn-view-svip">
+                                        XEM NGAY
+                                        </a>                                   
                                     </div>
                                 </div>
+
+                                <div class="banner-line">
+                                    <?php if (!empty($sv['image_url'])): ?>
+                                        <img src="<?= $sv['image_url'] ?>" class="inner-banner-img" alt="<?= $sv['server_name'] ?>">
+                                    <?php else: ?>
+                                        <img src="https://via.placeholder.com/600x60/550000/FFFFFF?text=MU+ONLINE+VIP" class="inner-banner-img" alt="Default Banner">
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -425,7 +434,7 @@ if (!function_exists('getBanner')) {
                                             <?= $sv['reset_name'] ?>
                                         </div>
                                         <div class="stat-box text-light"><?= $svDate ?></div>
-                                        <div class="stat-box"><a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view">XEM</a></div>
+                                        <div class="stat-box"><a href="<?= !empty($sv['slug']) ? $sv['slug'] : 'server' ?>-s<?= $sv['server_id'] ?>" class="btn-view">XEM</a></div>
                                     </div>
                                     <div class="banner-line">
                                         <?php if (!empty($sv['image_url'])): ?>
@@ -469,7 +478,7 @@ if (!function_exists('getBanner')) {
                                      <div class="stat-box small" style="color: #aeb5b6;"><?= $svDate ?></div>
 
                                     <div class="stat-box">
-                                        <a href="index.php?url=server-detail&id=<?= $sv['server_id'] ?>" class="btn-view" style="color: #666; border-color: #444;">Xem</a>
+                                        <a href="<?= !empty($sv['slug']) ? $sv['slug'] : 'server' ?>-s<?= $sv['server_id'] ?>" class="btn-view" style="color: #666; border-color: #444;">Xem</a>
                                     </div>
                                 </div>
                             </div>

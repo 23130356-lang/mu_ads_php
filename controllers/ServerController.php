@@ -112,38 +112,73 @@ public function manage() {
 
     
     public function detail() {
+        // 1. Lấy ID từ URL
         $id = $_GET['id'] ?? 0;
-        if ($id <= 0) die("ID không hợp lệ.");
+        if ($id <= 0) {
+            header("Location: index.php");
+            exit;
+        }
 
+        // 2. Lấy dữ liệu đầy đủ từ Database thông qua Model
+        // Đảm bảo getDetailFull đã JOIN với các bảng versions, server_types, reset_types
         $rawData = $this->serverModel->getDetailFull($id);
-        if (!$rawData) die("Server không tồn tại.");
+        
+        if (!$rawData) {
+            // Nếu không tìm thấy server, trả về 404 hoặc về trang chủ
+            header("HTTP/1.0 404 Not Found");
+            die("Máy chủ không tồn tại hoặc đã hết hạn.");
+        }
 
+        // 3. XỬ LÝ SEO (PHẦN QUAN TRỌNG NHẤT)
+        // Nhúng class SeoHelper
+        require_once '../models/SeoHelper.php';
+        
+        // Tạo đối tượng SEO từ dữ liệu thô trong DB
+        $seoData = SeoHelper::generateMeta($rawData);
+        
+        // Đưa vào biến Global để file header.php có thể truy cập được
+        $GLOBALS['seo'] = $seoData;
+
+        // 4. ĐỔ DỮ LIỆU VÀO VIEWMODEL (Giữ nguyên cấu trúc của bạn nhưng làm sạch dữ liệu)
         $server = new ServerViewModel();
         $server->id             = $rawData['server_id'];
-        $server->serverName     = $rawData['server_name'];
-        $server->muName         = $rawData['mu_name'];
-        $server->slogan         = $rawData['slogan'];
+        $server->serverName     = htmlspecialchars($rawData['server_name']);
+        $server->muName         = htmlspecialchars($rawData['mu_name']);
+        $server->slogan         = htmlspecialchars($rawData['slogan']);
         $server->bannerPackage  = $rawData['banner_package'];
-        $server->bannerImage    = !empty($rawData['banner_image']) ? $rawData['banner_image'] : 'assets/images/no-image.jpg';
+        
+        // Xử lý ảnh Banner (Ưu tiên ảnh upload, nếu không có dùng ảnh mặc định)
+        if (!empty($rawData['banner_image'])) {
+            // Nếu là link URL từ web khác thì giữ nguyên, nếu là file thì nối đường dẫn
+            $server->bannerImage = (filter_var($rawData['banner_image'], FILTER_VALIDATE_URL)) 
+                                    ? $rawData['banner_image'] 
+                                    : 'uploads/' . basename($rawData['banner_image']);
+        } else {
+            $server->bannerImage = 'assets/images/no-image.jpg';
+        }
+
         $server->websiteUrl     = $rawData['website_url'];
         $server->fanpageUrl     = $rawData['fanpage_url'];
-        $server->description    = $rawData['description'];
-        $server->serverTypeName = $rawData['server_type_name'] ?? 'Normal';
+        $server->description    = $rawData['description']; // Giữ nguyên HTML nếu dùng trình soạn thảo
+        $server->serverTypeName = $rawData['type_name'] ?? 'Normal'; // Lấy từ bảng server_types
 
+        // 5. CHI TIẾT THÔNG SỐ (STATS)
         $server->stats = new ServerStatsViewModel();
-        $server->stats->muVersionName = $rawData['version_name'] ?? 'Unknown';
-        $server->stats->expRate       = $rawData['exp_rate'];
-        $server->stats->dropRate      = $rawData['drop_rate'];
-        $server->stats->antiHack      = $rawData['anti_hack'];
-        $server->stats->resetTypeName = $rawData['reset_name'] ?? 'Unknown';
-        $server->stats->pointTypeName = $rawData['point_name'] ?? 'Unknown';
+        $server->stats->muVersionName = $rawData['version_name'] ?? 'Chưa xác định';
+        $server->stats->expRate       = number_format($rawData['exp_rate']) . 'x';
+        $server->stats->dropRate      = $rawData['drop_rate'] . '%';
+        $server->stats->antiHack      = htmlspecialchars($rawData['anti_hack'] ?? 'N/A');
+        $server->stats->resetTypeName = $rawData['reset_name'] ?? 'No Reset';
+        $server->stats->pointTypeName = $rawData['point_name'] ?? 'Cơ bản';
 
+        // 6. LỊCH TRÌNH (SCHEDULE)
         $server->schedule = new ServerScheduleViewModel();
-        $server->schedule->alphaDate = $rawData['alpha_date'];
-        $server->schedule->alphaTime = $rawData['alpha_time'];
-        $server->schedule->betaDate  = $rawData['beta_date'];
-        $server->schedule->betaTime  = $rawData['beta_time'];
+        $server->schedule->alphaDate = !empty($rawData['alpha_date']) ? date('d/m/Y', strtotime($rawData['alpha_date'])) : '---';
+        $server->schedule->alphaTime = !empty($rawData['alpha_time']) ? date('H:i', strtotime($rawData['alpha_time'])) : '';
+        $server->schedule->betaDate  = !empty($rawData['beta_date']) ? date('d/m/Y', strtotime($rawData['beta_date'])) : '---';
+        $server->schedule->betaTime  = !empty($rawData['beta_time']) ? date('H:i', strtotime($rawData['beta_time'])) : '';
 
+        // 7. GỌI VIEW HIỂN THỊ
         require_once '../public/server_detail.php';
     }
 

@@ -246,14 +246,6 @@ $metaDesc .= "Reset: {$server->stats->resetTypeName}. Thể loại: {$server->se
 
 <div class="container pt-4 pb-5">
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa-solid fa-house"></i> Trang Chủ</a></li>
-            <li class="breadcrumb-item"><a href="/#result-list" class="text-decoration-none">Danh Sách Server</a></li>
-            <li class="breadcrumb-item active text-warning" aria-current="page"><?= $server->serverName ?></li>
-        </ol>
-    </nav>
-
     <div class="row align-items-center mb-4">
         <div class="col-lg-4 text-center text-lg-start">
             <div class="server-header">

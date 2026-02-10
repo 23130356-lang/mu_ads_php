@@ -295,11 +295,11 @@
 
                         <div class="spec-item">
                             <span class="spec-label">Exp Rate</span>
-                            <span class="spec-value spec-highlight">x<?= $server->stats->expRate ?></span>
+                            <span class="spec-value spec-highlight"><?= $server->stats->expRate ?></span>
                         </div>
                         <div class="spec-item">
                             <span class="spec-label">Drop Rate</span>
-                            <span class="spec-value"><?= $server->stats->dropRate ?>%</span>
+                            <span class="spec-value"><?= $server->stats->dropRate ?></span>
                         </div>
                     </div>
                     

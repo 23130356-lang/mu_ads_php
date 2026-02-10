@@ -157,7 +157,10 @@ header("Location: " . $baseUrl . "/index.php?url=login&error=" . urlencode("Vui 
         require_once $rootPath . '/controllers/HomeBannerController.php';
         (new HomeBannerController($db))->register();
         break;
-
+case 'admin-users':
+        // Gọi thẳng file view, vì view đã tự gọi controller bên trong nó rồi
+        require_once 'admin/users.php';
+        break;
     // ---------------------------------------------------------------------
     // NHÓM 5: URL ĐỘNG (SEO) & 404
     // ---------------------------------------------------------------------

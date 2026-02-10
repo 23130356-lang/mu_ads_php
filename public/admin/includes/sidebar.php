@@ -32,11 +32,11 @@ $path_to_root = (strpos($current_page, '/views/') !== false) ? '../../' : '';
         </li>
 
         <li class="nav-item">
-            <a href="<?= $path_to_root ?>views/users/index.php" 
-               class="nav-link text-white <?= strpos($current_page, 'users') !== false ? 'active bg-primary' : '' ?>">
-                👤 Quản lý User
-            </a>
-        </li>
+    <a class="nav-link" href="index.php?url=admin-users">
+        <i class="fas fa-fw fa-users"></i>
+        <span>Quản lý Thành viên</span>
+    </a>
+</li>
     </ul>
     
     <hr>

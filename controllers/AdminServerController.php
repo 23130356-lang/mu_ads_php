@@ -9,8 +9,10 @@ class AdminServerController {
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         
+        // Kiểm tra quyền Admin
         if (!isset($_SESSION['user']['role']) || $_SESSION['user']['role'] !== 'ADMIN') {
-            header("Location: ../../../public/index.php"); 
+            // Đường dẫn redirect này tùy thuộc vào cấu trúc thư mục của bạn, hãy điều chỉnh nếu cần
+            header("Location: /index.php"); 
             exit;
         }
 
@@ -19,6 +21,7 @@ class AdminServerController {
         $this->model = new Server($this->db);
     }
 
+    // Lấy giá các gói để hiển thị (Hardcode hoặc lấy từ DB tùy logic)
     public function getPackagePrices() {
         return [
             'BASIC'     => 0,
@@ -27,42 +30,49 @@ class AdminServerController {
         ];
     }
 
+    // Hiển thị danh sách Server (Có phân trang)
+    public function index() {
+        $limit = 10; 
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        
+        $offset = ($page - 1) * $limit;
 
-public function index() {
-    $limit = 10; 
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    if ($page < 1) $page = 1;
-    
-    $offset = ($page - 1) * $limit;
+        $total_records = $this->model->countAllForAdmin();
+        $total_pages = ceil($total_records / $limit);
 
-    $total_records = $this->model->countAllForAdmin();
-    $total_pages = ceil($total_records / $limit);
-
-    $servers = $this->model->getAllForAdmin($limit, $offset);
-    $prices = $this->getPackagePrices();
-    
-    return [
-        'servers' => $servers,
-        'prices'  => $prices,
-        'pagination' => [
-            'current_page'  => $page,
-            'total_pages'   => $total_pages,
-            'total_records' => $total_records,
-            'limit'         => $limit
-        ]
-    ];
-}
-    public function edit($id) {
-        return $this->model->getById($id);
+        $servers = $this->model->getAllForAdmin($limit, $offset);
+        $prices = $this->getPackagePrices();
+        
+        return [
+            'servers' => $servers,
+            'prices'  => $prices,
+            'pagination' => [
+                'current_page'  => $page,
+                'total_pages'   => $total_pages,
+                'total_records' => $total_records,
+                'limit'         => $limit
+            ]
+        ];
     }
 
+    // Lấy thông tin Server để sửa (Đã sửa tên hàm cho khớp Model)
+    public function edit($id) {
+        // QUAN TRỌNG: Sửa getById -> getServerById
+        return $this->model->getServerById($id);
+    }
+
+    // Xử lý cập nhật thông tin Server
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $imageUrl = '';
+            
+            // Xử lý upload ảnh nếu có file mới
             if (!empty($_FILES['banner_file']['name'])) {
                 $imageUrl = $this->handleUpload();
             }
 
+            // Gom dữ liệu từ Form
             $data = [
                 'server_id'     => $_POST['server_id'],
                 'server_name'   => $_POST['server_name'],
@@ -70,8 +80,8 @@ public function index() {
                 'slogan'        => $_POST['slogan'],
                 'banner_package'=> $_POST['banner_package'],
                 'status'        => $_POST['status'],
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'banner_image'  => $imageUrl,
+                'is_active'     => isset($_POST['is_active']) ? 1 : 0,
+                'banner_image'  => $imageUrl, // Nếu rỗng, Model sẽ giữ ảnh cũ
                 'version_id'    => $_POST['version_id'],
                 'type_id'       => $_POST['type_id'],
                 'reset_id'      => $_POST['reset_id'],
@@ -89,34 +99,49 @@ public function index() {
             ];
 
             if ($this->model->updateFull($data)) {
+                // Redirect về trang danh sách (Điều chỉnh đường dẫn cho phù hợp với router của bạn)
                 header("Location: ../../index.php?msg=updated");
+                exit;
             } else {
-                echo "Lỗi cập nhật!";
+                echo "Lỗi cập nhật Server! Vui lòng kiểm tra lại dữ liệu.";
             }
         }
     }
 
+    // Xóa Server
     public function delete($id) {
-        $img = $this->model->delete($id);
-        if ($img) {
-             $filePath = __DIR__ . "/../public/" . $img;
-             if (file_exists($filePath) && is_file($filePath)) unlink($filePath);
+        // Hàm delete trong model trả về đường dẫn ảnh cũ để xóa file
+        $oldImage = $this->model->delete($id);
+        
+        if ($oldImage) {
+             $filePath = __DIR__ . "/../../public/" . $oldImage; // Chú ý đường dẫn thư mục public
+             if (file_exists($filePath) && is_file($filePath)) {
+                 unlink($filePath);
+             }
         }
-        header("Location: ../../index.php?msg=deleted");
+        header("Location: index.php?msg=deleted");
+        exit;
     }
 
+    // Hàm hỗ trợ Upload ảnh
     private function handleUpload() {
         if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
-            $targetDir = __DIR__ . "/../public/uploads/";
-            if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+            // Đường dẫn lưu ảnh: public/uploads/
+            $targetDir = __DIR__ . "/../../public/uploads/";
             
-            $filename = time() . "_" . $_FILES['banner_file']['name'];
-            if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $targetDir . $filename)) {
-                return "uploads/" . $filename;
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+            
+            // Đổi tên file để tránh trùng: time_tên_file
+            $filename = time() . "_" . basename($_FILES['banner_file']['name']);
+            $targetFile = $targetDir . $filename;
+            
+            if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $targetFile)) {
+                return "uploads/" . $filename; // Trả về đường dẫn để lưu vào DB
             }
         }
         return null;
     }
-    
 }
 ?>

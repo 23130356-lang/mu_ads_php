@@ -125,8 +125,8 @@ switch ($url) {
 
     case 'create-server':
         if (!isset($_SESSION['user_id'])) {
-            header("Location: " . $baseUrl . "/index.php?url=login?error=" . urlencode("Vui lòng đăng nhập"));
-            exit;
+// Thay dấu ? thứ hai thành dấu &
+header("Location: " . $baseUrl . "/index.php?url=login&error=" . urlencode("Vui lòng đăng nhập"));            exit;
         }
         require_once 'includes/header.php';
         require_once 'create_server.php';

@@ -1,5 +1,6 @@
 <?php
-// SỬA LẠI ĐOẠN REQUIRE NÀY
+// FILE: controllers/AdminHomeBannerController.php
+
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/HomeBanner.php';
 
@@ -12,16 +13,16 @@ class AdminHomeBannerController {
             session_start();
         }
 
+        // Kiểm tra đăng nhập
         if (!isset($_SESSION['user']) && !isset($_SESSION['user_id'])) {
+            // Chuyển hướng về login nếu chưa đăng nhập
             header("Location: ../../../public/index.php?url=login&error=" . urlencode("Vui lòng đăng nhập quản trị"));
             exit;
         }
 
-
+        // Kiểm tra quyền Admin
         $userRole = $_SESSION['user']['role'] ?? ''; 
-        
         if ($userRole !== 'ADMIN') {
-       
             echo "<div style='color:red; text-align:center; margin-top:50px; font-family:sans-serif;'>";
             echo "<h1>TRUY CẬP BỊ TỪ CHỐI!</h1>";
             echo "<p>Tài khoản của bạn không có quyền Admin.</p>";
@@ -45,7 +46,7 @@ class AdminHomeBannerController {
         return $this->model->getById($id);
     }
 
-    // Xử lý Thêm mới
+    // --- XỬ LÝ THÊM MỚI ---
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $imageUrl = $this->handleUpload();
@@ -56,7 +57,7 @@ class AdminHomeBannerController {
             }
 
             $data = [
-                'user_id'       => $_SESSION['user_id'] ?? 1, // ID Admin (tạm thời để 1 nếu chưa login)
+                'user_id'       => $_SESSION['user_id'] ?? 1,
                 'image_url'     => $imageUrl,
                 'target_url'    => $_POST['target_url'],
                 'position_code' => $_POST['position_code'],
@@ -64,8 +65,8 @@ class AdminHomeBannerController {
             ];
 
             if ($this->model->create($data)) {
-                // Sửa lại đường dẫn chuyển hướng cho đúng với view
-                header("Location: ../../index.php?msg=created"); 
+                // [ĐÃ SỬA]: Quay về banners.php (Lùi 2 cấp từ thư mục views/home_banners)
+                header("Location: ../../banners.php?msg=created"); 
                 exit;
             } else {
                 echo "Lỗi hệ thống!";
@@ -73,6 +74,7 @@ class AdminHomeBannerController {
         }
     }
 
+    // --- XỬ LÝ CẬP NHẬT ---
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id = $_POST['id'];
@@ -94,7 +96,8 @@ class AdminHomeBannerController {
             ];
 
             if ($this->model->update($data)) {
-                header("Location: ../../index.php?msg=updated");
+                // [ĐÃ SỬA]: Quay về banners.php (Lùi 2 cấp từ thư mục views/home_banners)
+                header("Location: ../../banners.php?msg=updated");
                 exit;
             } else {
                 echo "Lỗi cập nhật!";
@@ -102,24 +105,30 @@ class AdminHomeBannerController {
         }
     }
 
-    // Xử lý Xóa
+    // --- XỬ LÝ XÓA ---
     public function delete($id) {
-        $imageUrl = $this->model->delete($id);
+        // Lấy đường dẫn ảnh cũ để xóa file vật lý
+        $imageUrl = $this->model->delete($id); 
+        
         if ($imageUrl) {
-
+            // Xóa file ảnh trong thư mục uploads nếu tồn tại
             if (strpos($imageUrl, 'uploads/') !== false) {
                 $filePath = __DIR__ . "/../public/" . $imageUrl;
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
             }
-            header("Location: ../../index.php?msg=deleted");
+            
+            // [ĐÃ SỬA]: Quay về banners.php
+            // Vì hàm delete được gọi trực tiếp từ file banners.php nên không cần ../
+            header("Location: banners.php?msg=deleted");
             exit;
         } else {
             echo "Lỗi xóa!";
         }
     }
 
+    // --- HÀM UPLOAD ẢNH ---
     private function handleUpload() {
         if (isset($_FILES['imageFile']) && $_FILES['imageFile']['error'] === 0) {
             $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -128,7 +137,8 @@ class AdminHomeBannerController {
 
             if (in_array($ext, $allowed)) {
                 $newName = "banner_" . time() . "_" . uniqid() . "." . $ext;
-                                $targetDir = __DIR__ . "/../public/uploads/banners/";
+                // [CHECK LẠI ĐƯỜNG DẪN]: Đảm bảo thư mục này tồn tại
+                $targetDir = __DIR__ . "/../public/uploads/banners/";
                 
                 if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                 

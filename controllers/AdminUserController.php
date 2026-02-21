@@ -1,15 +1,17 @@
 <?php
 // FILE: controllers/AdminUserController.php
-
+require_once dirname(__DIR__) . '/config/Database.php';
+require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/config/Database.php';
 
 class AdminUserController {
     private $conn;
     private $table = 'users';
-
+    private $userModel;
     public function __construct() {
         $database = new Database();
         $this->conn = $database->connect();
+        $this->userModel = new User($this->conn);
     }
 
     // Lấy danh sách user (Trả về PDO Statement để dùng fetch() bên view)
@@ -48,6 +50,25 @@ class AdminUserController {
         $stmt->bindParam(':role', $new_role);
         $stmt->bindParam(':id', $user_id);
         return $stmt->execute();
+    }
+    public function ajaxSearch($page = 1, $limit = 10, $keyword = '') {
+        $offset = ($page - 1) * $limit;
+        
+        // Lấy data
+        $users = $this->userModel->getUsers($limit, $offset, $keyword);
+        $totalUsers = $this->userModel->countUsers($keyword);
+        
+        // Tính tổng số trang
+        $totalPages = ceil($totalUsers / $limit);
+
+        return [
+            'users' => $users,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_records' => $totalUsers
+            ]
+        ];
     }
 }
 ?>

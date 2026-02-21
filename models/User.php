@@ -94,5 +94,55 @@ class User {
 
         return $stmt->execute();
     }
+    public function getUsers($limit, $offset, $keyword = '') {
+        $sql = "SELECT * FROM " . $this->table;
+        
+        // Điều kiện tìm kiếm
+        if (!empty($keyword)) {
+            $sql .= " WHERE username LIKE :kw 
+                      OR email LIKE :kw 
+                      OR phone LIKE :kw 
+                      OR full_name LIKE :kw";
+        }
+        
+        $sql .= " ORDER BY user_id DESC LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!empty($keyword)) {
+            $kw = "%{$keyword}%";
+            $stmt->bindParam(':kw', $kw);
+        }
+        
+        // PDO LIMIT/OFFSET cần bind dạng INT
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); // Trả về mảng dữ liệu
+    }
+
+    // 7. Đếm tổng số user (để tính số trang)
+    public function countUsers($keyword = '') {
+        $sql = "SELECT COUNT(*) as total FROM " . $this->table;
+        
+        if (!empty($keyword)) {
+            $sql .= " WHERE username LIKE :kw 
+                      OR email LIKE :kw 
+                      OR phone LIKE :kw 
+                      OR full_name LIKE :kw";
+        }
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!empty($keyword)) {
+            $kw = "%{$keyword}%";
+            $stmt->bindParam(':kw', $kw);
+        }
+        
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
 }
 ?>

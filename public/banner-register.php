@@ -394,6 +394,7 @@
 
                     <button type="submit" class="btn btn-mu-action w-100 py-2" id="btnSubmit">
                         <i class="fa-solid fa-scroll me-2"></i> THANH TOÁN & ĐĂNG KÝ
+                        <input type="hidden" id="hiddenPriceValue" value="0">
                     </button>
 
                     <a href="index.php?url=nap-tien" id="btnRecharge" class="btn btn-outline-warning w-100 py-2 d-none">
@@ -718,5 +719,40 @@
         myModal.show();
     }
 </script>
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-2 border-warning shadow-lg" style="box-shadow: 0 0 20px rgba(255, 193, 7, 0.3) !important;">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border: 4px solid #144528;">
+                        <i class="fa-solid fa-check fa-3x text-white"></i>
+                    </div>
+                </div>
+
+                <h3 class="text-warning font-cinzel fw-bold mb-3 text-uppercase">Đăng Ký Thành Công!</h3>
+                <p class="text-secondary mb-4">Hệ thống đã ghi nhận yêu cầu quảng cáo của bạn.</p>
+
+                <div class="bg-black bg-opacity-25 border border-secondary rounded p-3 mb-4">
+                    <div class="d-flex justify-content-between mb-2 border-bottom border-secondary pb-2">
+                        <span class="text-light">Số dư ban đầu:</span>
+                        <span class="fw-bold text-white" id="successOldBalance">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 border-bottom border-secondary pb-2">
+                        <span class="text-light">Chi phí dịch vụ:</span>
+                        <span class="fw-bold text-danger" id="successPrice">-0</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-1">
+                        <span class="text-warning text-uppercase fw-bold">Số dư hiện tại:</span>
+                        <span class="fw-bold text-warning fs-5" id="successNewBalance">0</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-outline-warning w-100 py-2 fw-bold" onclick="location.reload()">
+                    <i class="fa-solid fa-rotate-right me-2"></i> HOÀN TẤT & TẢI LẠI TRANG
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
